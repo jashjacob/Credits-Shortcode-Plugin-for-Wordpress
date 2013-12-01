@@ -1,4 +1,4 @@
-source-shortcode
+Wordpress-Source-Shortcode
 ================
 
 Shortcode to add Source Link of a article in the post or page.
