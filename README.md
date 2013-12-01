@@ -3,7 +3,7 @@ Wordpress Post Source Shortcode
 
 Shortcode to add Source Link of a article in the post or page.
 
-[source link="http://URL"] Source Name [/source]
+[source link="http://example.com"] Source Name [/source]
 
 Example - http://techzei.com/google-acquired-flexycore-23-million/
 
