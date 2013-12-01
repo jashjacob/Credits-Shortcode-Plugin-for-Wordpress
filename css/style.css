@@ -1,0 +1,28 @@
+ul.credits {
+list-style: none;
+margin-left: 0;
+padding-left: 0;
+overflow: auto;
+}
+ul.credits li {
+overflow: auto;
+margin-bottom: 1px;
+float: left;
+list-style: none;
+}
+ul.credits li a {
+color: #ef4423;
+text-decoration: none;
+}
+ul.credits span {
+padding: 1px 5px;
+float: left;
+}
+.cre_cate {
+background: #ef4423;
+color: #ffffff;
+font-style: italic;
+}
+.cre_cate_link {
+background: #E0D9D9;
+}
