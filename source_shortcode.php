@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: Source Shortcode
-Version: 1.0
+Version: 1.1
 Plugin URI: http://techzei.com
-Description: Provides easy shortcode access to insert Source Link
+Description: Easy shortcode access to insert Source and Via Link inside posts in Wordpress
 Author: Jash Jacob
 Author URI: http://jashjacob.com
 
@@ -38,5 +38,16 @@ function sourcePrint($atts,$content=NULL) {
 	return $source;
 }
 add_shortcode('source','sourcePrint');
+
+function viaPrint($atts,$content=NULL) {
+	extract( shortcode_atts( array(
+		'link'		=> '#'
+	), $atts) );
+
+	$via = '<ul class="credits"><li class="credits"><span class="cre_cate">Via</span><span class="cre_cate_link"><a href="'.$link.'">'.$content.'</a></span></li></ul>';
+
+	return $via;
+}
+add_shortcode('via','viaPrint');
 
 ?>
