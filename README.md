@@ -1,7 +1,7 @@
 Credits Shortcode Plugin for Wordpress
 ================
 
-Shortcode to add Source Link or Via Link of a article in the post or page.
+Credits Shortcode plugin allows to add Source Link or Via Link for a post or a page. Shortcodes can be added directly or can be added using the button in the Wordpress Editor window.
 
 
 Usage
@@ -14,7 +14,12 @@ Usage
 Screenshot
 ============
 
+
+![ScreenShot](http://i.imgur.com/M0xnbTa.png)
+
+###Editor windows with Credits shortcode button
+
 ![ScreenShot](http://i.imgur.com/xdLCGQz.png)
+###Example Credits - Source and Via
 
 
-The color is hardcoded, Edit the CSS for your use. This will be released as plugin on wordpress.org soon.
