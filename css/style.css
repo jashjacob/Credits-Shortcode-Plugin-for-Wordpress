@@ -1,28 +1,90 @@
-ul.credits {
-list-style: none;
-margin-left: 0;
-padding-left: 0;
-overflow: auto;
+/* Reset all WordPress theme list indents, entry-content margins, and block layout overrides */
+.entry-content > ul.credits,
+.entry-content > div.credits,
+.is-layout-constrained > ul.credits,
+.is-layout-constrained > div.credits,
+ul.credits.wp-block-credits-shortcode,
+div.credits.wp-block-credits-shortcode,
+ul.credits,
+div.credits {
+    max-width: var(--wp--style--global--content-size) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    margin-top: 1.25rem !important;
+    margin-bottom: 1.25rem !important;
+    padding: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    display: block !important;
+    text-align: left !important;
+    clear: both !important;
+    box-sizing: border-box !important;
+    list-style: none !important;
 }
-ul.credits li {
-overflow: auto;
-margin-bottom: 1px;
-float: left;
-list-style: none;
+
+ul.credits li.credits,
+div.credits .credits-inner {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: stretch !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+    border-radius: 3px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-ul.credits li a {
-color: #ef4423;
-text-decoration: none;
+
+/* Micro-interaction hover lift & shadow */
+ul.credits li.credits:hover,
+div.credits .credits-inner:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-ul.credits span {
-padding: 1px 5px;
-float: left;
+
+ul.credits span,
+div.credits span {
+    padding: 4px 10px !important;
+    display: inline-block !important;
+    box-sizing: border-box !important;
+    transition: filter 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
+
 .cre_cate {
-background: #ef4423;
-color: #ffffff;
-font-style: italic;
+    background: #ef4423;
+    color: #ffffff;
+    font-style: italic;
+    font-weight: 600;
+    border-radius: 3px 0 0 3px;
 }
+
 .cre_cate_link {
-background: #E0D9D9;
+    background: #E0D9D9;
+    border-radius: 0 3px 3px 0;
+}
+
+.cre_cate_link a {
+    color: #ef4423;
+    text-decoration: none !important;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+/* Hover effects */
+ul.credits li.credits:hover .cre_cate,
+div.credits .credits-inner:hover .cre_cate {
+    filter: brightness(1.1);
+}
+
+ul.credits li.credits:hover .cre_cate_link,
+div.credits .credits-inner:hover .cre_cate_link {
+    filter: brightness(0.95);
+}
+
+.cre_cate_link a:hover {
+    text-decoration: underline !important;
 }

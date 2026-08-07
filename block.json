@@ -1,0 +1,41 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 2,
+  "name": "credits/shortcode",
+  "version": "1.3.0",
+  "title": "Credits Link",
+  "category": "embed",
+  "icon": "share",
+  "description": "Insert Source or Via credit link into your post with customizable accent colors.",
+  "keywords": ["credits", "source", "via", "attribution", "color"],
+  "textdomain": "credits-shortcode",
+  "attributes": {
+    "link": {
+      "type": "string",
+      "default": ""
+    },
+    "type": {
+      "type": "string",
+      "default": "source"
+    },
+    "name": {
+      "type": "string",
+      "default": ""
+    },
+    "badgeColor": {
+      "type": "string",
+      "default": "#ef4423"
+    },
+    "linkColor": {
+      "type": "string",
+      "default": "#E0D9D9"
+    },
+    "linkTextColor": {
+      "type": "string",
+      "default": "#ef4423"
+    }
+  },
+  "editorScript": "credits-block-js",
+  "editorStyle": "credits-block-style",
+  "style": "credits-block-style"
+}
