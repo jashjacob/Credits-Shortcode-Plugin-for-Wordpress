@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue.svg)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://php.net)
-[![Version](https://img.shields.io/badge/version-1.3-green.svg)](https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress)
+[![Version](https://img.shields.io/badge/version-1.3.1-green.svg)](https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress)
 [![License](https://img.shields.io/badge/license-GPLv2-orange.svg)](LICENSE)
 
 **Credits Shortcode & Block** is a lightweight, secure WordPress plugin that lets content creators seamlessly insert **"Source"** or **"Via"** attribution links into posts and pages.
@@ -25,7 +25,7 @@ Supports the modern **Gutenberg Block Editor** (with live preview, customizable 
 - 🎨 **Custom Accent Colors**: Pick custom badge background, link background, and link text colors directly from the Block Editor sidebar or shortcode parameters.
 - ✨ **Micro-Interaction Hover Effects**: Smooth 0.2s CSS transitions with subtle hover elevation and brightness shifts.
 - 📐 **Flush Block Layout Alignment**: Auto-adapts to modern WordPress block themes (Twenty Twenty-Four, Twenty Twenty-Five) to sit 100% flush with paragraph content.
-- 🔒 **Security Hardened**: Fully sanitized inputs (`esc_url()`, `esc_html()`) protecting against Stored XSS (CVE-2026-6256 fix).
+- 🔒 **Security Hardened**: Full WordPress late-escaping architecture (`esc_url()`, `esc_html()`, `esc_attr()`) and color sanitization (`sanitize_hex_color()`).
 - ⚡ **Zero Build Dependencies**: Built using standard WordPress JS globals (`wp.blocks`, `wp.element`, `wp.blockEditor`). No `npm build` required.
 - 🔄 **100% Backward Compatible**: Legacy shortcodes `[credits]` continue to render seamlessly.
 
@@ -113,6 +113,11 @@ You can also override the default appearance in **Appearance > Customize > Addit
 ---
 
 ## 📜 Changelog
+
+### Version 1.3.1
+- Sanitize attributes on input (`esc_url_raw`, `sanitize_text_field`, `sanitize_key`, `sanitize_hex_color`).
+- Escape only when building output: `esc_url()` for href, `esc_html()` for text, `esc_attr( safecss_filter_attr() )` for inline CSS.
+- Restrict accent colors to hex values and run the final markup through `wp_kses()`.
 
 ### Version 1.3
 - 🌟 Added native Gutenberg Block support (`credits/shortcode`).

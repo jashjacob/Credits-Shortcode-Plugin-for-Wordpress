@@ -44,14 +44,18 @@
             var setAttributes = props.setAttributes;
             var blockProps = useBlockProps ? useBlockProps({ className: 'credits wp-block-credits-shortcode' }) : { className: 'credits wp-block-credits-shortcode' };
 
+            var hexColor = function (value, fallback) {
+                return /^#(?:[A-Fa-f0-9]{3}){1,2}$/.test(value || '') ? value : fallback;
+            };
+
             var currentType = (attributes.type || 'source').toLowerCase();
             var displayType = currentType === 'via' ? 'Via' : 'Source';
             var linkName = attributes.name || 'Credit Name';
             var linkUrl = attributes.link || '#';
 
-            var badgeBg = attributes.badgeColor || '#ef4423';
-            var linkBg = attributes.linkColor || '#E0D9D9';
-            var linkTextClr = attributes.linkTextColor || '#ef4423';
+            var badgeBg = hexColor(attributes.badgeColor, '#ef4423');
+            var linkBg = hexColor(attributes.linkColor, '#E0D9D9');
+            var linkTextClr = hexColor(attributes.linkTextColor, '#ef4423');
 
             var inspectorChildren = [
                 el(
@@ -96,21 +100,21 @@
                             {
                                 value: badgeBg,
                                 onChange: function (newColor) {
-                                    setAttributes({ badgeColor: newColor || '#ef4423' });
+                                    setAttributes({ badgeColor: hexColor(newColor, '#ef4423') });
                                 },
                                 label: 'Badge Background Color'
                             },
                             {
                                 value: linkBg,
                                 onChange: function (newColor) {
-                                    setAttributes({ linkColor: newColor || '#E0D9D9' });
+                                    setAttributes({ linkColor: hexColor(newColor, '#E0D9D9') });
                                 },
                                 label: 'Link Background Color'
                             },
                             {
                                 value: linkTextClr,
                                 onChange: function (newColor) {
-                                    setAttributes({ linkTextColor: newColor || '#ef4423' });
+                                    setAttributes({ linkTextColor: hexColor(newColor, '#ef4423') });
                                 },
                                 label: 'Link Text Color'
                             }

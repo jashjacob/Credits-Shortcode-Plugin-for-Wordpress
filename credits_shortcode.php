@@ -1,14 +1,14 @@
 <?php
 /*
 Plugin Name: Credits Shortcode & Block
-Version: 1.3
+Version: 1.3.1
 Plugin URI: https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress
 Description: Easy shortcode and Gutenberg block to insert Source and Via Link inside posts in WordPress.
 Author: Jash Jacob
 Author URI: http://jashjacob.com
 Requires at least: 5.0
 Requires PHP: 7.4
-Tested up to: 6.7
+Tested up to: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,24 +34,85 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Allowed HTML for the rendered credits markup.
+ *
+ * @return array
+ */
+function credits_allowed_html() {
+	return array(
+		'ul'   => array(
+			'class' => true,
+		),
+		'li'   => array(
+			'class' => true,
+		),
+		'span' => array(
+			'class' => true,
+			'style' => true,
+		),
+		'a'    => array(
+			'href'   => true,
+			'target' => true,
+			'rel'    => true,
+			'style'  => true,
+		),
+	);
+}
+
+/**
+ * Return a scalar attribute as a string.
+ *
+ * @param mixed $value Raw attribute.
+ * @return string
+ */
+function credits_string_attr( $value ) {
+	return is_scalar( $value ) ? (string) $value : '';
+}
+
+/**
+ * Sanitize a user-supplied color. Hex only.
+ *
+ * @param mixed $color Raw color value.
+ * @return string Sanitized hex color or empty string.
+ */
+function credits_sanitize_color( $color ) {
+	$color = trim( credits_string_attr( $color ) );
+	if ( '' === $color ) {
+		return '';
+	}
+
+	$hex = sanitize_hex_color( $color );
+	return is_string( $hex ) ? $hex : '';
+}
+
+/**
  * Enqueue frontend styles.
  */
 add_action( 'wp_enqueue_scripts', 'credits_enqueue_styles' );
 function credits_enqueue_styles() {
 	wp_enqueue_style(
-		'source_style',
+		'credits-shortcode',
 		plugin_dir_url( __FILE__ ) . 'css/style.css',
 		array(),
-		'1.3'
+		'1.3.1'
 	);
 }
 
 /**
- * Main render function for both Shortcode and Gutenberg Block.
- * Fixes CVE-2026-6256 Stored XSS by escaping output.
- * Supports custom accent colors (badgeColor, linkColor, linkTextColor).
+ * Render the credits shortcode and dynamic block.
+ *
+ * Sanitize/validate first. Escape only when a value is concatenated into HTML,
+ * using the function that matches that context.
+ *
+ * @param array       $atts    Shortcode or block attributes.
+ * @param string|null $content Optional shortcode inner content (the name).
+ * @return string
  */
 function creditsPrint( $atts, $content = null ) {
+	if ( ! is_array( $atts ) ) {
+		$atts = array();
+	}
+
 	$atts = shortcode_atts(
 		array(
 			'link'            => '#',
@@ -68,38 +129,61 @@ function creditsPrint( $atts, $content = null ) {
 		'credits'
 	);
 
-	// Handle name from shortcode content or block attribute
-	$raw_name = ! empty( $content ) ? $content : $atts['name'];
-	if ( empty( $raw_name ) ) {
-		$raw_name = 'Credit Link';
+	// Sanitize / validate early. These variables stay unescaped.
+	if ( is_string( $content ) && '' !== trim( $content ) ) {
+		$name = sanitize_text_field( $content );
+	} else {
+		$name = sanitize_text_field( credits_string_attr( $atts['name'] ) );
+	}
+	if ( '' === $name ) {
+		$name = 'Credit Link';
 	}
 
-	$clean_link = esc_url( $atts['link'] );
-	$clean_name = esc_html( $raw_name );
-	$type       = strtolower( trim( $atts['type'] ) );
-	$category   = ( $type === 'via' ) ? 'Via' : 'Source';
+	$link = esc_url_raw( credits_string_attr( $atts['link'] ) );
+	if ( '' === $link ) {
+		$link = '#';
+	}
 
-	// Resolve custom accent colors
-	$badge_bg      = ! empty( $atts['badgeColor'] ) ? $atts['badgeColor'] : $atts['badge_color'];
-	$link_bg       = ! empty( $atts['linkColor'] ) ? $atts['linkColor'] : $atts['link_color'];
-	$link_text_clr = ! empty( $atts['linkTextColor'] ) ? $atts['linkTextColor'] : $atts['link_text_color'];
+	$type     = sanitize_key( credits_string_attr( $atts['type'] ) );
+	$category = ( 'via' === $type ) ? 'Via' : 'Source';
 
-	$badge_style = ! empty( $badge_bg ) ? sprintf( ' style="background-color: %s;"', esc_attr( $badge_bg ) ) : '';
-	$link_style  = ! empty( $link_bg ) ? sprintf( ' style="background-color: %s;"', esc_attr( $link_bg ) ) : '';
-	$text_style  = ! empty( $link_text_clr ) ? sprintf( ' style="color: %s;"', esc_attr( $link_text_clr ) ) : '';
+	$badge_bg      = credits_sanitize_color( ! empty( $atts['badgeColor'] ) ? $atts['badgeColor'] : $atts['badge_color'] );
+	$link_bg       = credits_sanitize_color( ! empty( $atts['linkColor'] ) ? $atts['linkColor'] : $atts['link_color'] );
+	$link_text_clr = credits_sanitize_color( ! empty( $atts['linkTextColor'] ) ? $atts['linkTextColor'] : $atts['link_text_color'] );
 
-	return sprintf(
-		'<ul class="credits wp-block-credits-shortcode"><li class="credits"><span class="cre_cate"%s>%s</span><span class="cre_cate_link"%s><a href="%s" target="_blank" rel="noopener noreferrer"%s>%s</a></span></li></ul>',
-		$badge_style,
-		$category,
-		$link_style,
-		$clean_link,
-		$text_style,
-		$clean_name
-	);
+	$html  = '<ul class="credits wp-block-credits-shortcode">';
+	$html .= '<li class="credits">';
+	$html .= '<span class="cre_cate"';
+	if ( '' !== $badge_bg ) {
+		$html .= ' style="' . esc_attr( safecss_filter_attr( 'background-color: ' . $badge_bg ) ) . '"';
+	}
+	$html .= '>' . esc_html( $category ) . '</span>';
+	$html .= '<span class="cre_cate_link"';
+	if ( '' !== $link_bg ) {
+		$html .= ' style="' . esc_attr( safecss_filter_attr( 'background-color: ' . $link_bg ) ) . '"';
+	}
+	$html .= '>';
+	$html .= '<a href="' . esc_url( $link ) . '" target="_blank" rel="noopener noreferrer"';
+	if ( '' !== $link_text_clr ) {
+		$html .= ' style="' . esc_attr( safecss_filter_attr( 'color: ' . $link_text_clr ) ) . '"';
+	}
+	$html .= '>' . esc_html( $name ) . '</a>';
+	$html .= '</span></li></ul>';
+
+	return wp_kses( $html, credits_allowed_html() );
 }
 
 add_shortcode( 'credits', 'creditsPrint' );
+
+/**
+ * Block render callback. Pass attributes only so inner block HTML is not treated as the name.
+ *
+ * @param array $attributes Block attributes.
+ * @return string
+ */
+function credits_render_block( $attributes ) {
+	return creditsPrint( is_array( $attributes ) ? $attributes : array() );
+}
 
 /**
  * Register Gutenberg Block
@@ -114,26 +198,24 @@ function credits_register_gutenberg_block() {
 		'credits-block-js',
 		plugins_url( 'js/credits-block.js', __FILE__ ),
 		array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components' ),
-		'1.3',
+		'1.3.1',
 		true
 	);
 
 	wp_register_style(
-		'credits-block-style',
+		'credits-shortcode',
 		plugins_url( 'css/style.css', __FILE__ ),
 		array(),
-		'1.3'
+		'1.3.1'
 	);
 
 	register_block_type(
 		'credits/shortcode',
 		array(
 			'editor_script'   => 'credits-block-js',
-			'editor_style'    => 'credits-block-style',
-			'style'           => 'credits-block-style',
-			'render_callback' => function ( $attributes ) {
-				return creditsPrint( $attributes );
-			},
+			'editor_style'    => 'credits-shortcode',
+			'style'           => 'credits-shortcode',
+			'render_callback' => 'credits_render_block',
 		)
 	);
 }
@@ -158,6 +240,6 @@ function credits_add_buttons( $plugin_array ) {
 }
 
 function credits_register_buttons( $buttons ) {
-	array_push( $buttons, 'addcredits' );
+	$buttons[] = 'addcredits';
 	return $buttons;
 }
