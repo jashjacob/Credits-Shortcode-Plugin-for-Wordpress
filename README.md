@@ -2,8 +2,9 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue.svg)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://php.net)
-[![Version](https://img.shields.io/badge/version-1.3.1-green.svg)](https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress)
+[![Version](https://img.shields.io/badge/version-1.4.0-green.svg)](https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress)
 [![License](https://img.shields.io/badge/license-GPLv2-orange.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-PHPUnit%20%7C%20CI-brightgreen.svg)](.github/workflows/) <!-- TODO: replace with real CI status badge once the workflow runs on a public CI service -->
 
 **Credits Shortcode & Block** is a lightweight, secure WordPress plugin that lets content creators seamlessly insert **"Source"** or **"Via"** attribution links into posts and pages.
 
@@ -40,7 +41,7 @@ Supports the modern **Gutenberg Block Editor** (with live preview, customizable 
 3. Use the block sidebar (Inspector Controls) to configure:
    - **Credit Type**: Select `Source` or `Via`.
    - **Source / Via Name**: Enter attribution name (e.g., *TechZei*).
-   - **Link URL**: Enter source URL (e.g., `http://techzei.com`).
+   - **Link URL**: Enter source URL (e.g., `https://techzei.com`).
 4. Expand **Accent Color Settings** in the block sidebar to customize:
    - **Badge Background Color** (default: `#ef4423`)
    - **Link Background Color** (default: `#E0D9D9`)
@@ -103,12 +104,42 @@ You can also override the default appearance in **Appearance > Customize > Addit
 
 ## 📦 Installation
 
-1. Download or clone this repository:
-   ```bash
-   git clone https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress.git
-   ```
-2. Upload the `Credits-Shortcode-Plugin-for-Wordpress` directory to your WordPress site's `/wp-content/plugins/` directory (or upload the `.zip` file via **Plugins > Add New > Upload Plugin**).
+### From your WordPress admin (recommended)
+
+1. Go to **Plugins > Add New**.
+2. Search for "Credits Shortcode & Block".
+3. Click **Install Now**, then **Activate**.
+
+### Manual upload
+
+1. Download the plugin as a `.zip` file from [WordPress.org](https://wordpress.org/plugins/) or the [releases page](https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress/releases).
+2. Go to **Plugins > Add New > Upload Plugin** and choose the `.zip`.
 3. Activate the plugin through the **Plugins** menu in WordPress.
+
+### For contributors (git)
+
+```bash
+git clone https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress.git
+```
+
+Copy or symlink the directory into your site's `/wp-content/plugins/` and activate it. See **Development** below for running the test suite.
+
+---
+
+## 🧪 Development & Testing
+
+The plugin ships with a PHPUnit test suite (32 tests) that runs automatically via GitHub Actions on every push.
+
+```bash
+composer install
+vendor/bin/phpunit
+```
+
+---
+
+## 🌍 Translations
+
+The plugin is translation-ready via the `credits-shortcode` text domain. If you'd like to contribute a translation, please open a pull request — translators welcome!
 
 ---
 
@@ -137,4 +168,4 @@ You can also override the default appearance in **Appearance > Customize > Addit
 
 Distributed under the GNU General Public License v2 or later. See `LICENSE` for details.
 
-Developed by [Jash Jacob](http://jashjacob.com).
+Developed by [Jash Jacob](https://jashjacob.com).

@@ -1,8 +1,27 @@
 (function () {
+    var textdomain = 'credits-shortcode';
+    var pluginVersion = '1.4.0';
+
+    try {
+        var currentScript = document.currentScript;
+        var match = currentScript && currentScript.src ? currentScript.src.match(/[?&]ver=([^&]+)/) : null;
+        if (match && match[1]) {
+            pluginVersion = decodeURIComponent(match[1]);
+        }
+    } catch (err) {
+        pluginVersion = '1.4.0';
+    }
+
+    var translate = function (text) {
+        return (window.wp && window.wp.i18n && typeof window.wp.i18n.__ === 'function')
+            ? window.wp.i18n.__(text, textdomain)
+            : text;
+    };
+
     tinymce.create('tinymce.plugins.Credits', {
         init: function (ed, url) {
             ed.addCommand('addcredits', function () {
-                var ctype = prompt('What do you want to add (Source/ Via) ? ');
+                var ctype = prompt(translate('What do you want to add (Source/ Via) ? '));
                 var clink;
                 var cname;
                 var shortcode;
@@ -13,12 +32,12 @@
 
                 ctype = String(ctype).toLowerCase();
                 if (ctype !== 'source' && ctype !== 'via') {
-                    alert('Invalid type');
+                    alert(translate('Invalid type'));
                     return;
                 }
 
-                clink = prompt('Link?');
-                cname = prompt('Link Name');
+                clink = prompt(translate('Link?'));
+                cname = prompt(translate('Link Name'));
                 if (clink === null || cname === null) {
                     return;
                 }
@@ -30,7 +49,7 @@
             });
 
             ed.addButton('addcredits', {
-                title: 'Add Credits',
+                title: translate('Add Credits'),
                 cmd: 'addcredits',
                 image: url + '/credits_logo.png'
             });
@@ -44,9 +63,9 @@
             return {
                 longname: 'Credits Buttons',
                 author: 'Jash Jacob',
-                authorurl: 'http://jashjacob.com',
-                infourl: 'http://techzei.com',
-                version: '1.3.1'
+                authorurl: 'https://jashjacob.com',
+                infourl: 'https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress',
+                version: pluginVersion
             };
         }
     });

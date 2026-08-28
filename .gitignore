@@ -1,3 +1,5 @@
 node_modules/
+vendor/
 *.zip
 .DS_Store
+

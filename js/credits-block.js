@@ -1,21 +1,25 @@
 (function (wp) {
     var registerBlockType = wp.blocks.registerBlockType;
     var el = wp.element.createElement;
-    var InspectorControls = wp.blockEditor ? wp.blockEditor.InspectorControls : wp.editor.InspectorControls;
-    var PanelColorSettings = wp.blockEditor ? wp.blockEditor.PanelColorSettings : (wp.editor ? wp.editor.PanelColorSettings : null);
-    var useBlockProps = wp.blockEditor ? wp.blockEditor.useBlockProps : null;
+    var blockEditor = wp.blockEditor || {};
+    var InspectorControls = blockEditor.InspectorControls;
+    var PanelColorSettings = blockEditor.PanelColorSettings;
+    var useBlockProps = typeof blockEditor.useBlockProps === 'function' ? blockEditor.useBlockProps : null;
     var PanelBody = wp.components.PanelBody;
     var SelectControl = wp.components.SelectControl;
     var TextControl = wp.components.TextControl;
+    var __ = (wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__ : function (text) { return text; };
+    var textdomain = 'credits-shortcode';
+    var savedSettings = (window.creditsShortcodeSettings && typeof window.creditsShortcodeSettings === 'object') ? window.creditsShortcodeSettings : {};
 
     registerBlockType('credits/shortcode', {
-        title: 'Credits Link',
+        title: __('Credits Link', textdomain),
         icon: 'share',
-        category: 'embed',
+        category: 'widgets',
         attributes: {
             link: {
                 type: 'string',
-                default: ''
+                default: '#'
             },
             type: {
                 type: 'string',
@@ -27,15 +31,15 @@
             },
             badgeColor: {
                 type: 'string',
-                default: '#ef4423'
+                default: ''
             },
             linkColor: {
                 type: 'string',
-                default: '#E0D9D9'
+                default: ''
             },
             linkTextColor: {
                 type: 'string',
-                default: '#ef4423'
+                default: ''
             }
         },
 
@@ -44,44 +48,48 @@
             var setAttributes = props.setAttributes;
             var blockProps = useBlockProps ? useBlockProps({ className: 'credits wp-block-credits-shortcode' }) : { className: 'credits wp-block-credits-shortcode' };
 
-            var hexColor = function (value, fallback) {
-                return /^#(?:[A-Fa-f0-9]{3}){1,2}$/.test(value || '') ? value : fallback;
+            var hexColor = function (value) {
+                return /^#(?:[A-Fa-f0-9]{3}){1,2}$/.test(value || '') ? value : '';
             };
 
             var currentType = (attributes.type || 'source').toLowerCase();
-            var displayType = currentType === 'via' ? 'Via' : 'Source';
-            var linkName = attributes.name || 'Credit Name';
+            var displayType = currentType === 'via' ? __('Via', textdomain) : __('Source', textdomain);
+            var linkName = attributes.name || __('Credit Name', textdomain);
             var linkUrl = attributes.link || '#';
 
-            var badgeBg = hexColor(attributes.badgeColor, '#ef4423');
-            var linkBg = hexColor(attributes.linkColor, '#E0D9D9');
-            var linkTextClr = hexColor(attributes.linkTextColor, '#ef4423');
+            var badgeBg = hexColor(attributes.badgeColor) || hexColor(savedSettings.badge_color);
+            var linkBg = hexColor(attributes.linkColor) || hexColor(savedSettings.link_color);
+            var linkTextClr = hexColor(attributes.linkTextColor) || hexColor(savedSettings.link_text_color);
+
+            var badgeStyle = badgeBg ? { backgroundColor: badgeBg } : null;
+            var linkStyle = linkBg ? { backgroundColor: linkBg } : null;
+            var linkTextStyle = linkTextClr ? { color: linkTextClr } : null;
 
             var inspectorChildren = [
                 el(
                     PanelBody,
-                    { title: 'Credit Settings', initialOpen: true },
+                    { title: __('Credit Settings', textdomain), initialOpen: true },
                     el(SelectControl, {
-                        label: 'Credit Type',
+                        label: __('Credit Type', textdomain),
                         value: attributes.type || 'source',
                         options: [
-                            { label: 'Source', value: 'source' },
-                            { label: 'Via', value: 'via' }
+                            { label: __('Source', textdomain), value: 'source' },
+                            { label: __('Via', textdomain), value: 'via' }
                         ],
                         onChange: function (newType) {
                             setAttributes({ type: newType });
                         }
                     }),
                     el(TextControl, {
-                        label: 'Source / Via Name',
+                        label: __('Source / Via Name', textdomain),
                         value: attributes.name || '',
-                        placeholder: 'e.g. TechZei',
+                        placeholder: __('e.g. TechZei', textdomain),
                         onChange: function (newName) {
                             setAttributes({ name: newName });
                         }
                     }),
                     el(TextControl, {
-                        label: 'Link URL',
+                        label: __('Link URL', textdomain),
                         value: attributes.link || '',
                         placeholder: 'https://example.com',
                         onChange: function (newLink) {
@@ -94,29 +102,29 @@
             if (PanelColorSettings) {
                 inspectorChildren.push(
                     el(PanelColorSettings, {
-                        title: 'Accent Color Settings',
+                        title: __('Accent Color Settings', textdomain),
                         initialOpen: false,
                         colorSettings: [
                             {
                                 value: badgeBg,
                                 onChange: function (newColor) {
-                                    setAttributes({ badgeColor: hexColor(newColor, '#ef4423') });
+                                    setAttributes({ badgeColor: hexColor(newColor) });
                                 },
-                                label: 'Badge Background Color'
+                                label: __('Badge Background Color', textdomain)
                             },
                             {
                                 value: linkBg,
                                 onChange: function (newColor) {
-                                    setAttributes({ linkColor: hexColor(newColor, '#E0D9D9') });
+                                    setAttributes({ linkColor: hexColor(newColor) });
                                 },
-                                label: 'Link Background Color'
+                                label: __('Link Background Color', textdomain)
                             },
                             {
                                 value: linkTextClr,
                                 onChange: function (newColor) {
-                                    setAttributes({ linkTextColor: hexColor(newColor, '#ef4423') });
+                                    setAttributes({ linkTextColor: hexColor(newColor) });
                                 },
-                                label: 'Link Text Color'
+                                label: __('Link Text Color', textdomain)
                             }
                         ]
                     })
@@ -130,11 +138,15 @@
                 el(
                     'li',
                     { className: 'credits' },
-                    el('span', { className: 'cre_cate', style: { backgroundColor: badgeBg } }, displayType),
                     el(
                         'span',
-                        { className: 'cre_cate_link', style: { backgroundColor: linkBg } },
-                        el('a', { href: linkUrl, style: { color: linkTextClr }, onClick: function(e) { e.preventDefault(); } }, linkName)
+                        { className: 'cre_cate', style: badgeStyle },
+                        displayType
+                    ),
+                    el(
+                        'span',
+                        { className: 'cre_cate_link', style: linkStyle },
+                        el('a', { href: linkUrl, style: linkTextStyle, onClick: function(e) { e.preventDefault(); } }, linkName)
                     )
                 )
             );

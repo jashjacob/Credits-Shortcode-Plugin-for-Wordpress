@@ -1,14 +1,14 @@
 <?php
 /*
 Plugin Name: Credits Shortcode & Block
-Version: 1.3.1
+Version: 1.4.0
 Plugin URI: https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress
 Description: Easy shortcode and Gutenberg block to insert Source and Via Link inside posts in WordPress.
 Author: Jash Jacob
-Author URI: http://jashjacob.com
+Author URI: https://jashjacob.com
 Requires at least: 5.0
 Requires PHP: 7.4
-Tested up to: 7.0
+Tested up to: 7.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
+}
+
+if ( ! defined( 'CREDITS_SHORTCODE_VERSION' ) ) {
+	define( 'CREDITS_SHORTCODE_VERSION', '1.4.0' );
 }
 
 /**
@@ -81,8 +85,73 @@ function credits_sanitize_color( $color ) {
 		return '';
 	}
 
-	$hex = sanitize_hex_color( $color );
+	$hex = '';
+	if ( function_exists( 'sanitize_hex_color' ) ) {
+		// Not globally available before WP 5.4 (Customizer-only load).
+		$hex = sanitize_hex_color( $color );
+	} elseif ( preg_match( '/^#(?:[A-Fa-f0-9]{3}){1,2}$/', $color ) ) {
+		$hex = $color;
+	}
+
 	return is_string( $hex ) ? $hex : '';
+}
+
+/**
+ * Sanitize a credit type value against the allowlist.
+ *
+ * @param mixed $value Raw type value.
+ * @return string Either 'source' or 'via'.
+ */
+function credits_sanitize_type( $value ) {
+	$value = sanitize_key( credits_string_attr( $value ) );
+	return ( 'via' === $value ) ? 'via' : 'source';
+}
+
+/**
+ * Sanitize the full settings array for storage.
+ *
+ * @param mixed $input Raw settings input.
+ * @return array Clean settings.
+ */
+function credits_sanitize_settings( $input ) {
+	$input = is_array( $input ) ? $input : array();
+
+	return array(
+		'type'            => credits_sanitize_type( isset( $input['type'] ) ? $input['type'] : '' ),
+		'badge_color'     => credits_sanitize_color( isset( $input['badge_color'] ) ? $input['badge_color'] : '' ),
+		'link_color'      => credits_sanitize_color( isset( $input['link_color'] ) ? $input['link_color'] : '' ),
+		'link_text_color' => credits_sanitize_color( isset( $input['link_text_color'] ) ? $input['link_text_color'] : '' ),
+	);
+}
+
+/**
+ * Read site-wide default appearance from the database.
+ *
+ * @return array Sanitized settings.
+ */
+function credits_get_settings() {
+	$defaults = array(
+		'type'            => 'source',
+		'badge_color'     => '',
+		'link_color'      => '',
+		'link_text_color' => '',
+	);
+
+	$stored = get_option( 'credits_shortcode_settings', array() );
+	if ( ! is_array( $stored ) ) {
+		return $defaults;
+	}
+
+	foreach ( $defaults as $key => $default ) {
+		if ( ! array_key_exists( $key, $stored ) ) {
+			continue;
+		}
+		$defaults[ $key ] = ( 'type' === $key )
+			? credits_sanitize_type( $stored[ $key ] )
+			: credits_sanitize_color( $stored[ $key ] );
+	}
+
+	return $defaults;
 }
 
 /**
@@ -94,8 +163,16 @@ function credits_enqueue_styles() {
 		'credits-shortcode',
 		plugin_dir_url( __FILE__ ) . 'css/style.css',
 		array(),
-		'1.3.1'
+		CREDITS_SHORTCODE_VERSION
 	);
+}
+
+/**
+ * Load plugin textdomain.
+ */
+add_action( 'init', 'credits_load_textdomain' );
+function credits_load_textdomain() {
+	load_plugin_textdomain( 'credits-shortcode', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 }
 
 /**
@@ -108,48 +185,61 @@ function credits_enqueue_styles() {
  * @param string|null $content Optional shortcode inner content (the name).
  * @return string
  */
-function creditsPrint( $atts, $content = null ) {
+function credits_print_shortcode( $atts, $content = null ) {
 	if ( ! is_array( $atts ) ) {
 		$atts = array();
 	}
 
-	$atts = shortcode_atts(
-		array(
-			'link'            => '#',
-			'type'            => 'source',
-			'name'            => '',
-			'badgeColor'      => '',
-			'badge_color'     => '',
-			'linkColor'       => '',
-			'link_color'      => '',
-			'linkTextColor'   => '',
-			'link_text_color' => '',
-		),
-		$atts,
-		'credits'
-	);
+	$attr = static function ( $key ) use ( $atts ) {
+		return isset( $atts[ $key ] ) ? credits_string_attr( $atts[ $key ] ) : '';
+	};
 
 	// Sanitize / validate early. These variables stay unescaped.
 	if ( is_string( $content ) && '' !== trim( $content ) ) {
 		$name = sanitize_text_field( $content );
 	} else {
-		$name = sanitize_text_field( credits_string_attr( $atts['name'] ) );
+		$name = sanitize_text_field( $attr( 'name' ) );
 	}
 	if ( '' === $name ) {
-		$name = 'Credit Link';
+		$name = __( 'Credit Link', 'credits-shortcode' );
 	}
 
-	$link = esc_url_raw( credits_string_attr( $atts['link'] ) );
+	$link = esc_url_raw( $attr( 'link' ) );
 	if ( '' === $link ) {
 		$link = '#';
 	}
 
-	$type     = sanitize_key( credits_string_attr( $atts['type'] ) );
-	$category = ( 'via' === $type ) ? 'Via' : 'Source';
+	$settings = credits_get_settings();
 
-	$badge_bg      = credits_sanitize_color( ! empty( $atts['badgeColor'] ) ? $atts['badgeColor'] : $atts['badge_color'] );
-	$link_bg       = credits_sanitize_color( ! empty( $atts['linkColor'] ) ? $atts['linkColor'] : $atts['link_color'] );
-	$link_text_clr = credits_sanitize_color( ! empty( $atts['linkTextColor'] ) ? $atts['linkTextColor'] : $atts['link_text_color'] );
+	$type     = sanitize_key( $attr( 'type' ) );
+	if ( '' === $type ) {
+		$type = $settings['type'];
+	}
+	$category = ( 'via' === $type ) ? __( 'Via', 'credits-shortcode' ) : __( 'Source', 'credits-shortcode' );
+
+	$badge_bg      = credits_sanitize_color( $attr( 'badgeColor' ) );
+	$link_bg       = credits_sanitize_color( $attr( 'linkColor' ) );
+	$link_text_clr = credits_sanitize_color( $attr( 'linkTextColor' ) );
+
+	if ( '' === $badge_bg ) {
+		$badge_bg = credits_sanitize_color( $attr( 'badge_color' ) );
+	}
+	if ( '' === $link_bg ) {
+		$link_bg = credits_sanitize_color( $attr( 'link_color' ) );
+	}
+	if ( '' === $link_text_clr ) {
+		$link_text_clr = credits_sanitize_color( $attr( 'link_text_color' ) );
+	}
+
+	if ( '' === $badge_bg ) {
+		$badge_bg = $settings['badge_color'];
+	}
+	if ( '' === $link_bg ) {
+		$link_bg = $settings['link_color'];
+	}
+	if ( '' === $link_text_clr ) {
+		$link_text_clr = $settings['link_text_color'];
+	}
 
 	$html  = '<ul class="credits wp-block-credits-shortcode">';
 	$html .= '<li class="credits">';
@@ -173,7 +263,7 @@ function creditsPrint( $atts, $content = null ) {
 	return wp_kses( $html, credits_allowed_html() );
 }
 
-add_shortcode( 'credits', 'creditsPrint' );
+add_shortcode( 'credits', 'credits_print_shortcode' );
 
 /**
  * Block render callback. Pass attributes only so inner block HTML is not treated as the name.
@@ -182,7 +272,7 @@ add_shortcode( 'credits', 'creditsPrint' );
  * @return string
  */
 function credits_render_block( $attributes ) {
-	return creditsPrint( is_array( $attributes ) ? $attributes : array() );
+	return credits_print_shortcode( is_array( $attributes ) ? $attributes : array() );
 }
 
 /**
@@ -197,24 +287,22 @@ function credits_register_gutenberg_block() {
 	wp_register_script(
 		'credits-block-js',
 		plugins_url( 'js/credits-block.js', __FILE__ ),
-		array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components' ),
-		'1.3.1',
+		array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-i18n' ),
+		CREDITS_SHORTCODE_VERSION,
 		true
 	);
+	wp_localize_script( 'credits-block-js', 'creditsShortcodeSettings', credits_get_settings() );
 
 	wp_register_style(
 		'credits-shortcode',
 		plugins_url( 'css/style.css', __FILE__ ),
 		array(),
-		'1.3.1'
+		CREDITS_SHORTCODE_VERSION
 	);
 
-	register_block_type(
-		'credits/shortcode',
+	register_block_type_from_metadata(
+		__DIR__ . '/block.json',
 		array(
-			'editor_script'   => 'credits-block-js',
-			'editor_style'    => 'credits-shortcode',
-			'style'           => 'credits-shortcode',
 			'render_callback' => 'credits_render_block',
 		)
 	);
@@ -235,11 +323,149 @@ function credits_buttons() {
 }
 
 function credits_add_buttons( $plugin_array ) {
-	$plugin_array['credits'] = plugins_url( 'credits_shortcode_plugin.js', __FILE__ );
+	$plugin_array['credits'] = add_query_arg( 'ver', CREDITS_SHORTCODE_VERSION, plugins_url( 'credits_shortcode_plugin.js', __FILE__ ) );
 	return $plugin_array;
 }
 
 function credits_register_buttons( $buttons ) {
 	$buttons[] = 'addcredits';
 	return $buttons;
+}
+
+/**
+ * Register the Settings -> Credits page.
+ */
+add_action( 'admin_menu', 'credits_add_settings_page' );
+function credits_add_settings_page() {
+	add_options_page(
+		__( 'Credits Shortcode', 'credits-shortcode' ),
+		__( 'Credits', 'credits-shortcode' ),
+		'manage_options',
+		'credits-shortcode',
+		'credits_render_settings_page'
+	);
+}
+
+/**
+ * Register settings, section and fields.
+ */
+add_action( 'admin_init', 'credits_register_settings' );
+function credits_register_settings() {
+	register_setting(
+		'credits_shortcode',
+		'credits_shortcode_settings',
+		array( 'sanitize_callback' => 'credits_sanitize_settings' )
+	);
+
+	add_settings_section(
+		'credits_shortcode_defaults',
+		__( 'Default Credit Appearance', 'credits-shortcode' ),
+		'credits_settings_section_intro',
+		'credits-shortcode'
+	);
+
+	add_settings_field(
+		'credits_default_type',
+		__( 'Default credit type', 'credits-shortcode' ),
+		'credits_field_default_type',
+		'credits-shortcode',
+		'credits_shortcode_defaults'
+	);
+
+	foreach ( array(
+		'badge_color'     => __( 'Badge background color', 'credits-shortcode' ),
+		'link_color'      => __( 'Link background color', 'credits-shortcode' ),
+		'link_text_color' => __( 'Link text color', 'credits-shortcode' ),
+	) as $key => $label ) {
+		add_settings_field(
+			'credits_' . $key,
+			$label,
+			'credits_field_color',
+			'credits-shortcode',
+			'credits_shortcode_defaults',
+			array( 'color_key' => $key )
+		);
+	}
+}
+
+/**
+ * Section intro copy.
+ */
+function credits_settings_section_intro() {
+	echo '<p>' . esc_html( __( 'These defaults apply when a shortcode or block does not set its own values. Leave colors empty to inherit neutral plugin styling.', 'credits-shortcode' ) ) . '</p>';
+}
+
+/**
+ * Default credit type dropdown.
+ */
+function credits_field_default_type() {
+	$type = credits_get_settings()['type'];
+	?>
+	<select name="credits_shortcode_settings[type]">
+		<option value="source" <?php selected( 'source', $type ); ?>><?php echo esc_html( __( 'Source', 'credits-shortcode' ) ); ?></option>
+		<option value="via" <?php selected( 'via', $type ); ?>><?php echo esc_html( __( 'Via', 'credits-shortcode' ) ); ?></option>
+	</select>
+	<?php
+}
+
+/**
+ * Color picker field.
+ *
+ * @param array $args Field args, expects 'color_key'.
+ */
+function credits_field_color( $args ) {
+	$key     = isset( $args['color_key'] ) ? sanitize_key( $args['color_key'] ) : '';
+	$allowed = array( 'badge_color', 'link_color', 'link_text_color' );
+	if ( '' === $key || ! in_array( $key, $allowed, true ) ) {
+		return;
+	}
+
+	$value = credits_get_settings()[ $key ];
+	?>
+	<input
+		type="text"
+		class="credits-color-picker"
+		name="credits_shortcode_settings[<?php echo esc_attr( $key ); ?>]"
+		value="<?php echo esc_attr( $value ); ?>"
+		data-default-color="<?php echo esc_attr( $value ); ?>"
+	/>
+	<?php
+}
+
+/**
+ * Render the settings page.
+ */
+function credits_render_settings_page() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	?>
+	<div class="wrap">
+		<h1><?php echo esc_html( __( 'Credits Shortcode', 'credits-shortcode' ) ); ?></h1>
+		<form action="options.php" method="post">
+			<?php
+			settings_fields( 'credits_shortcode' );
+			do_settings_sections( 'credits-shortcode' );
+			submit_button();
+			?>
+		</form>
+	</div>
+	<?php
+}
+
+/**
+ * Enqueue the WordPress color picker on the Credits settings screen only.
+ */
+add_action( 'admin_enqueue_scripts', 'credits_admin_assets' );
+function credits_admin_assets( $hook ) {
+	if ( 'settings_page_credits-shortcode' !== $hook ) {
+		return;
+	}
+
+	wp_enqueue_style( 'wp-color-picker' );
+	wp_enqueue_script( 'wp-color-picker' );
+	wp_add_inline_script(
+		'wp-color-picker',
+		'jQuery(function($){ $(\'.credits-color-picker\').wpColorPicker(); });'
+	);
 }

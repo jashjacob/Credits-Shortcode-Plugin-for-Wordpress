@@ -1,0 +1,29 @@
+{
+	"name": "jashjacob/credits-shortcode",
+	"description": "Easy shortcode and Gutenberg block to insert Source and Via Link inside posts in WordPress.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"authors": [
+		{
+			"name": "Jash Jacob",
+			"homepage": "https://jashjacob.com"
+		}
+	],
+	"require": {
+		"php": ">=7.4"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^9.6"
+	},
+	"autoload-dev": {
+		"classmap": [
+			"tests/"
+		],
+		"files": [
+			"tests/bootstrap.php"
+		]
+	},
+	"scripts": {
+		"test": "phpunit"
+	}
+}

@@ -24,6 +24,7 @@ div.credits {
     list-style: none !important;
 }
 
+/* Legacy selectors kept for posts saved before v1.3, which stored static div-based markup */
 ul.credits li.credits,
 div.credits .credits-inner {
     list-style: none !important;
@@ -55,20 +56,18 @@ div.credits span {
 }
 
 .cre_cate {
-    background: #ef4423;
+    background: #1d2327;
     color: #ffffff;
-    font-style: italic;
     font-weight: 600;
     border-radius: 3px 0 0 3px;
 }
 
 .cre_cate_link {
-    background: #E0D9D9;
+    background: #f0f0f1;
     border-radius: 0 3px 3px 0;
 }
 
 .cre_cate_link a {
-    color: #ef4423;
     text-decoration: none !important;
     font-weight: 500;
     transition: color 0.2s ease;
