@@ -1,5 +1,9 @@
 # Credits Shortcode & Block Plugin for WordPress
 
+<p align="center">
+  <img src="assets/banner-1544x500.png" alt="Credits Shortcode & Block Banner" width="100%" />
+</p>
+
 [![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue.svg)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://php.net)
 [![Version](https://img.shields.io/badge/version-1.4.0-green.svg)](https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress)
