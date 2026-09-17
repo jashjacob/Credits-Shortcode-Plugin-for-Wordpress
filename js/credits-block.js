@@ -1,7 +1,7 @@
 (function (wp) {
     var registerBlockType = wp.blocks.registerBlockType;
     var el = wp.element.createElement;
-    var blockEditor = wp.blockEditor || {};
+    var blockEditor = wp.blockEditor || wp.editor || {};
     var InspectorControls = blockEditor.InspectorControls;
     var PanelColorSettings = blockEditor.PanelColorSettings;
     var useBlockProps = typeof blockEditor.useBlockProps === 'function' ? blockEditor.useBlockProps : null;
@@ -11,8 +11,10 @@
     var __ = (wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__ : function (text) { return text; };
     var textdomain = 'credits-shortcode';
     var savedSettings = (window.creditsShortcodeSettings && typeof window.creditsShortcodeSettings === 'object') ? window.creditsShortcodeSettings : {};
+    var blockApiVersion = savedSettings.block_api_version === 3 ? 3 : 1;
 
     registerBlockType('credits/shortcode', {
+        apiVersion: blockApiVersion,
         title: __('Credits Link', textdomain),
         icon: 'share',
         category: 'widgets',
@@ -23,7 +25,7 @@
             },
             type: {
                 type: 'string',
-                default: 'source'
+                default: ''
             },
             name: {
                 type: 'string',
@@ -52,7 +54,8 @@
                 return /^#(?:[A-Fa-f0-9]{3}){1,2}$/.test(value || '') ? value : '';
             };
 
-            var currentType = (attributes.type || 'source').toLowerCase();
+            var savedType = savedSettings.type === 'via' ? 'via' : 'source';
+            var currentType = (attributes.type || savedType).toLowerCase();
             var displayType = currentType === 'via' ? __('Via', textdomain) : __('Source', textdomain);
             var linkName = attributes.name || __('Credit Name', textdomain);
             var linkUrl = attributes.link || '#';
@@ -71,7 +74,7 @@
                     { title: __('Credit Settings', textdomain), initialOpen: true },
                     el(SelectControl, {
                         label: __('Credit Type', textdomain),
-                        value: attributes.type || 'source',
+                        value: currentType,
                         options: [
                             { label: __('Source', textdomain), value: 'source' },
                             { label: __('Via', textdomain), value: 'via' }

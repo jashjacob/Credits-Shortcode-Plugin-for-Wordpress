@@ -2,7 +2,7 @@
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
   "name": "credits/shortcode",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "title": "Credits Link",
   "category": "widgets",
   "icon": "share",
@@ -16,7 +16,7 @@
     },
     "type": {
       "type": "string",
-      "default": "source"
+      "default": ""
     },
     "name": {
       "type": "string",

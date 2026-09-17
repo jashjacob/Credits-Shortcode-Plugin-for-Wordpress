@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 }
 
+$GLOBALS['wp_version'] = '7.1';
+
 /* -------------------------------------------------------------------------
  * Hooks / registration
  * ---------------------------------------------------------------------- */
@@ -103,6 +105,12 @@ if ( ! function_exists( 'load_plugin_textdomain' ) ) {
 if ( ! function_exists( 'plugin_dir_url' ) ) {
 	function plugin_dir_url( $file ) {
 		return 'http://example.test/wp-content/plugins/credits-shortcode/';
+	}
+}
+
+if ( ! function_exists( 'plugin_dir_path' ) ) {
+	function plugin_dir_path( $file ) {
+		return dirname( $file ) . '/';
 	}
 }
 

@@ -10,6 +10,7 @@ final class SettingsTest extends TestCase {
 
 	protected function setUp(): void {
 		$GLOBALS['credits_test_options'] = array();
+		$GLOBALS['wp_version']           = '7.1';
 	}
 
 	private function render( array $atts = array() ) {
@@ -136,5 +137,15 @@ final class SettingsTest extends TestCase {
 		$this->assertArrayHasKey( 'credits-block-js', $GLOBALS['credits_test_localized_scripts'] );
 		$data = $GLOBALS['credits_test_localized_scripts']['credits-block-js']['creditsShortcodeSettings'];
 		$this->assertSame( '#ABCDEF', $data['badge_color'] );
+		$this->assertSame( 'source', $data['type'] );
+		$this->assertSame( 3, $data['block_api_version'] );
+	}
+
+	public function test_block_api_version_falls_back_for_older_wordpress(): void {
+		$GLOBALS['wp_version'] = '5.0';
+		$this->assertSame( 1, credits_block_api_version() );
+
+		$GLOBALS['wp_version'] = '6.3';
+		$this->assertSame( 3, credits_block_api_version() );
 	}
 }

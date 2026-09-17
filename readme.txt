@@ -1,120 +1,142 @@
 === Credits Shortcode & Block ===
 Contributors: jashjacob
 Donate link: https://jashjacob.com
-Tags: credits, source, via, shortcode, block, attribution
+Tags: attribution, source, credits, block, shortcode
 Requires at least: 5.0
 Tested up to: 7.1
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Easy shortcode and Gutenberg block to insert Source and Via attribution credits inside posts in WordPress.
+Add clean Source and Via attribution links with a Gutenberg block, shortcode, or Classic Editor button.
 
 == Description ==
 
-Credits Shortcode & Block allows content creators to easily add formatted "Source" or "Via" attribution credit lines to WordPress posts and pages.
+Give readers a clear path back to the original source. Credits Shortcode & Block adds compact, theme-friendly Source or Via attribution links to WordPress posts and pages.
 
-Supports the modern Gutenberg Block Editor (with live preview, customizable accent color pickers, and sidebar controls), traditional shortcodes, and legacy Classic Editor toolbar buttons.
+= Highlights =
 
-= Shortcode Usage =
+* Native Gutenberg block with a live editor preview.
+* Simple `[credits]` shortcode for any post, page, or widget area.
+* Site-wide defaults under Settings > Credits.
+* Optional colors for the badge, link background, and link text.
+* Classic Editor toolbar button for legacy workflows.
+* Responsive, theme-friendly output with subtle hover feedback.
+* Translation-ready and compatible with WordPress multisite.
+* No external service, account, tracking, or front-end JavaScript.
 
-Basic Source attribution:
+= Gutenberg Block =
+
+1. Open a post or page in the Block Editor.
+2. Add the **Credits Link** block by clicking **+** or typing `/credits`.
+3. Choose Source or Via, enter the attribution name, and add its URL.
+4. Optionally choose accent colors in the block sidebar.
+
+The block is rendered dynamically, so saved content stays clean and current.
+
+= Shortcode =
+
+Basic source attribution:
 
 `[credits link="https://example.com"]Source Name[/credits]`
 
 Via attribution:
 
-`[credits link="https://example.com" type="via"]Via Name[/credits]`
+`[credits link="https://example.com" type="via"]Publication Name[/credits]`
 
-With a name attribute (instead of wrapped text):
+Using a name attribute:
 
-`[credits name="TechZei" link="https://example.com"]`
+`[credits name="Source Name" link="https://example.com"]`
 
-Full set of attributes:
-
-* `name` — the attribution name to display. Defaults to the shortcode's inner content.
-* `link` — the URL the credit links to (escaped with `esc_url()`).
-* `source` — an optional secondary label shown alongside the name.
-* `type` — `source` or `via` badge prefix.
-* `badge_color`, `link_color`, `link_text_color` — hex color overrides for the accent styling.
-
-Example with custom colors:
+Custom colors:
 
 `[credits link="https://example.com" type="source" badge_color="#0073aa" link_color="#f0f0f0" link_text_color="#0073aa"]Source Name[/credits]`
 
-= Block Usage =
+Supported attributes:
 
-1. In the WordPress Block Editor, click **+** or type `/credits` to insert the **Credits Link** block (`credits/shortcode`).
-2. Set the Credit Type (Source/Via), attribution name, and Link URL in the block sidebar.
-3. Optionally expand Accent Color Settings to customize the badge background, link background, and link text colors.
+* `name` - attribution text; inner shortcode content takes precedence.
+* `link` - destination URL.
+* `type` - `source` or `via`.
+* `badge_color` - badge background as a 3- or 6-digit hex color.
+* `link_color` - link area background as a 3- or 6-digit hex color.
+* `link_text_color` - link text as a 3- or 6-digit hex color.
 
-The block renders live in the editor and adapts to modern block themes so the credit line sits flush with paragraph content.
+= Site-wide Defaults =
+
+Go to **Settings > Credits** to choose the default credit type and optional accent colors. Individual blocks and shortcodes can override those defaults.
 
 == Installation ==
 
-1. In your WordPress admin, go to **Plugins > Add New**.
-2. Search for "Credits Shortcode & Block".
+1. In WordPress, go to **Plugins > Add New**.
+2. Search for **Credits Shortcode & Block**.
 3. Click **Install Now**, then **Activate**.
+4. Add a Credits Link block, use the `[credits]` shortcode, or configure defaults under **Settings > Credits**.
 
-Manual installation:
+For a manual installation, upload the plugin folder to `/wp-content/plugins/` and activate it from the Plugins screen.
 
-1. Download the plugin from WordPress.org (or this repository) as a `.zip` file.
-2. Go to **Plugins > Add New > Upload Plugin** and choose the `.zip`, or upload the extracted `credits-shortcode` folder to your `/wp-content/plugins/` directory via FTP/SFTP.
-3. Activate the plugin through the **Plugins** menu in WordPress.
-
-== FAQ ==
+== Frequently Asked Questions ==
 
 = Can I change how the credit line looks? =
 
-Yes. Use the Accent Color Settings in the block sidebar, the color attributes on the shortcode, or override the CSS classes (`.cre_cate`, `.cre_cate_link`) in **Appearance > Customize > Additional CSS**. The plugin enqueues minimal default styles that are easy to override.
+Yes. Set colors for an individual block or shortcode, configure site-wide defaults under Settings > Credits, or use custom CSS. Without custom colors, the plugin uses neutral styling that inherits the active theme's link color.
 
-= Can I add multiple credits per post? =
+= Can I add more than one credit to a post? =
 
-Yes. Insert multiple blocks or shortcodes anywhere in a post or page — each one renders its own independent credit line, so you can list several sources.
+Yes. Add as many blocks or shortcodes as needed. Each credit is rendered independently.
 
 = What happens if I deactivate the plugin? =
 
-Shortcode output stops being rendered, so existing `[credits]` tags will appear as plain text inside your post content. Your posts are not modified; simply re-activate the plugin to restore the rendered credit lines.
+Your posts are not modified or deleted. Dynamic blocks stop rendering, and shortcode tags remain in post content until the plugin is reactivated.
 
-= How do I change the colors? =
+= Does the plugin send data to another service? =
 
-Per-instance colors can be set with the `badge_color`, `link_color`, and `link_text_color` attributes (hex values) or via the block sidebar color pickers. Site-wide defaults can be overridden with custom CSS targeting the same classes.
+No. The plugin makes no external requests and includes no analytics or tracking.
 
-= Does it add rel="nofollow" to the links? =
+= Does it add rel="nofollow" to links? =
 
-No, links use standard anchor markup with escaped URLs. If you need `nofollow` for SEO reasons, you can filter the output with your own markup filter or use a third-party link-management plugin; the credit line is plain HTML so any standard link-filtering plugin will apply to it.
+No. Credit links open in a new tab with `noopener noreferrer`. The plugin does not add `nofollow` automatically.
+
+= Does it work with the Classic Editor? =
+
+Yes. When the Classic Editor is active, an Add Credits toolbar button inserts the shortcode for you.
 
 == Screenshots ==
 
-1. The credit line rendered on the frontend.
-2. Gutenberg block settings in the editor sidebar.
+1. A Source or Via attribution rendered on the front end.
+2. Credits Link settings in the Gutenberg block sidebar.
 
 == Changelog ==
 
+= 1.4.1 =
+* Fixed Gutenberg block registration on WordPress 5.0 through 5.4.
+* Fixed new blocks so they inherit the site-wide default credit type.
+* Added block-editor JavaScript translation loading.
+* Refreshed the WordPress.org banner, icons, and screenshots.
+* Improved directory copy and release metadata.
+
 = 1.4.0 =
-* Added internationalization (i18n) support — all strings now use the `credits-shortcode` text domain; translators welcome.
-* The Gutenberg block is now registered from `block.json` metadata with `apiVersion 3`.
-* Version is now maintained from a single source of truth in the main plugin file.
-* Added a PHPUnit test suite (32 tests) running in continuous integration.
-* Neutral, theme-friendly default styling: the badge no longer forces brand colors or italics; accent colors are opt-in and links inherit your theme's link color. Existing blocks keep their saved colors.
-* New Settings -> Credits page: store site-wide default credit type and accent colors (saved via the Settings API with hex validation); shortcodes and blocks without explicit values use them. Settings are removed on uninstall.
+* Added internationalization support for PHP and block-editor strings.
+* Registered the block from `block.json` metadata on supported WordPress versions.
+* Added site-wide defaults under Settings > Credits.
+* Added a PHPUnit test suite and PHP 7.4 through 8.4 continuous integration.
+* Switched to neutral, theme-friendly default styling while preserving saved colors.
 
 = 1.3.1 =
-* Sanitize attributes on input (`esc_url_raw`, `sanitize_text_field`, `sanitize_key`, `sanitize_hex_color`).
-* Escape only when building output: `esc_url()` for href, `esc_html()` for text, `esc_attr( safecss_filter_attr() )` for inline CSS.
-* Restrict accent colors to hex values and run the final markup through `wp_kses()`.
+* Sanitized shortcode attributes and applied context-aware escaping to rendered output.
+* Restricted accent colors to valid hex values.
+* Added a strict HTML allowlist for final shortcode markup.
 
 = 1.3 =
-* Added native Gutenberg Block support (`credits/shortcode`).
-* Added custom Accent Color Pickers in the Block Editor sidebar and shortcodes.
-* Added micro-interaction hover lift animations and smooth CSS transitions.
-* Fixed Stored XSS vulnerability (CVE-2026-6256).
+* Added the native Credits Link Gutenberg block.
+* Added per-credit accent color controls.
+* Added hover feedback and block-theme layout compatibility.
+* Hardened shortcode rendering and output escaping.
 
 = 1.2 =
-* Initial public release with Classic Editor support.
+* Initial public release with shortcode and Classic Editor support.
 
 == Upgrade Notice ==
 
-= 1.4.0 =
-Adds translations support, block.json metadata registration (apiVersion 3), and an automated test suite. No breaking changes for existing shortcodes or blocks.
+= 1.4.1 =
+Adds site-wide defaults, translation support, automated tests, improved WordPress 5.0 compatibility, and refreshed directory artwork. Existing shortcodes and blocks remain compatible.

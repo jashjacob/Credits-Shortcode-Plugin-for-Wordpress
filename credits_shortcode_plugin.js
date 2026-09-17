@@ -1,6 +1,6 @@
 (function () {
     var textdomain = 'credits-shortcode';
-    var pluginVersion = '1.4.0';
+    var pluginVersion = '1.4.1';
 
     try {
         var currentScript = document.currentScript;
@@ -9,7 +9,7 @@
             pluginVersion = decodeURIComponent(match[1]);
         }
     } catch (err) {
-        pluginVersion = '1.4.0';
+        pluginVersion = '1.4.1';
     }
 
     var translate = function (text) {

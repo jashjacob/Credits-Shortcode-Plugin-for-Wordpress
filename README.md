@@ -6,11 +6,11 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue.svg)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://php.net)
-[![Version](https://img.shields.io/badge/version-1.4.0-green.svg)](https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress)
+[![Version](https://img.shields.io/badge/version-1.4.1-green.svg)](https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress)
 [![License](https://img.shields.io/badge/license-GPLv2-orange.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-PHPUnit%20%7C%20CI-brightgreen.svg)](.github/workflows/) <!-- TODO: replace with real CI status badge once the workflow runs on a public CI service -->
 
-**Credits Shortcode & Block** is a lightweight, secure WordPress plugin that lets content creators seamlessly insert **"Source"** or **"Via"** attribution links into posts and pages.
+**Credits Shortcode & Block** gives readers a clear path back to the original source. Add compact, theme-friendly **Source** or **Via** attribution links to posts and pages without writing markup.
 
 Supports the modern **Gutenberg Block Editor** (with live preview, customizable accent color pickers, and sidebar controls), traditional **Shortcodes**, and legacy **Classic Editor** toolbar buttons.
 
@@ -132,7 +132,7 @@ Copy or symlink the directory into your site's `/wp-content/plugins/` and activa
 
 ## 🧪 Development & Testing
 
-The plugin ships with a PHPUnit test suite (32 tests) that runs automatically via GitHub Actions on every push.
+The plugin ships with a PHPUnit test suite (34 tests) that runs automatically across PHP 7.4–8.4 in GitHub Actions on every push.
 
 ```bash
 composer install
@@ -149,6 +149,19 @@ The plugin is translation-ready via the `credits-shortcode` text domain. If you'
 
 ## 📜 Changelog
 
+### Version 1.4.1
+- Fixed Gutenberg block registration on WordPress 5.0–5.4.
+- Fixed new blocks so they inherit the site-wide default credit type.
+- Added block-editor JavaScript translation loading.
+- Refreshed the WordPress.org banner, icons, and screenshots.
+- Improved release metadata and directory documentation.
+
+### Version 1.4.0
+- Added translation support and `block.json` metadata registration.
+- Added site-wide defaults under **Settings → Credits**.
+- Added a PHPUnit test suite and PHP 7.4–8.4 continuous integration.
+- Switched to neutral, theme-friendly default styling while preserving saved colors.
+
 ### Version 1.3.1
 - Sanitize attributes on input (`esc_url_raw`, `sanitize_text_field`, `sanitize_key`, `sanitize_hex_color`).
 - Escape only when building output: `esc_url()` for href, `esc_html()` for text, `esc_attr( safecss_filter_attr() )` for inline CSS.
@@ -159,7 +172,7 @@ The plugin is translation-ready via the `credits-shortcode` text domain. If you'
 - 🎨 Added custom **Accent Color Pickers** in the Block Editor sidebar and shortcode parameters (`badge_color`, `link_color`, `link_text_color`).
 - ✨ Added micro-interaction hover lift animations and smooth CSS transitions.
 - 📐 Fixed block layout container specificity for modern WordPress Block Themes (Twenty Twenty-Four, Twenty Twenty-Five).
-- 🔒 Fixed Stored XSS vulnerability (CVE-2026-6256) by removing `extract()` and escaping all URLs/HTML output.
+- 🔒 Hardened shortcode rendering by removing `extract()` and consistently sanitizing and escaping output.
 - 📋 Added official WordPress header tags (`Requires at least: 5.0`, `Requires PHP: 7.4`, `Tested up to: 6.7`).
 
 ### Version 1.2
