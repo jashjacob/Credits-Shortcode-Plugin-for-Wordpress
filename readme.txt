@@ -4,7 +4,7 @@ Donate link: https://jashjacob.com
 Tags: attribution, source, credits, block, shortcode
 Requires at least: 5.0
 Tested up to: 7.1
-Stable tag: 1.4.1
+Stable tag: 1.5.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -21,6 +21,7 @@ Give readers a clear path back to the original source. Credits Shortcode & Block
 * Simple `[credits]` shortcode for any post, page, or widget area.
 * Site-wide defaults under Settings > Credits.
 * Optional colors for the badge, link background, and link text.
+* Compact, standard, or spacious gaps between consecutive credits.
 * Classic Editor toolbar button for legacy workflows.
 * Responsive, theme-friendly output with subtle hover feedback.
 * Translation-ready and compatible with WordPress multisite.
@@ -61,10 +62,15 @@ Supported attributes:
 * `badge_color` - badge background as a 3- or 6-digit hex color.
 * `link_color` - link area background as a 3- or 6-digit hex color.
 * `link_text_color` - link text as a 3- or 6-digit hex color.
+* `spacing` - `compact`, `standard`, or `spacious`; defaults to the site-wide setting.
+
+To keep several credits close together:
+
+`[credits link="https://example.com" spacing="compact"]Source Name[/credits]`
 
 = Site-wide Defaults =
 
-Go to **Settings > Credits** to choose the default credit type and optional accent colors. Individual blocks and shortcodes can override those defaults.
+Go to **Settings > Credits** to choose the default credit type, spacing, and optional accent colors. Individual blocks and shortcodes can override those defaults.
 
 == Installation ==
 
@@ -108,6 +114,11 @@ Yes. When the Classic Editor is active, an Add Credits toolbar button inserts th
 
 == Changelog ==
 
+= 1.5.0 =
+* Added site-wide spacing defaults under Settings > Credits.
+* Added Compact, Standard, and Spacious spacing presets for each block or shortcode.
+* Added spacing inheritance and validation tests.
+
 = 1.4.1 =
 * Fixed Gutenberg block registration on WordPress 5.0 through 5.4.
 * Fixed new blocks so they inherit the site-wide default credit type.
@@ -138,5 +149,5 @@ Yes. When the Classic Editor is active, an Add Credits toolbar button inserts th
 
 == Upgrade Notice ==
 
-= 1.4.1 =
-Adds site-wide defaults, translation support, automated tests, improved WordPress 5.0 compatibility, and refreshed directory artwork. Existing shortcodes and blocks remain compatible.
+= 1.5.0 =
+Adds configurable spacing for stacked credits. Existing blocks and shortcodes keep the Standard spacing unless you choose another preset.

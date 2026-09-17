@@ -27,6 +27,10 @@
                 type: 'string',
                 default: ''
             },
+            spacing: {
+                type: 'string',
+                default: ''
+            },
             name: {
                 type: 'string',
                 default: ''
@@ -48,14 +52,20 @@
         edit: function (props) {
             var attributes = props.attributes;
             var setAttributes = props.setAttributes;
-            var blockProps = useBlockProps ? useBlockProps({ className: 'credits wp-block-credits-shortcode' }) : { className: 'credits wp-block-credits-shortcode' };
-
             var hexColor = function (value) {
                 return /^#(?:[A-Fa-f0-9]{3}){1,2}$/.test(value || '') ? value : '';
             };
 
             var savedType = savedSettings.type === 'via' ? 'via' : 'source';
             var currentType = (attributes.type || savedType).toLowerCase();
+            var spacingValues = ['compact', 'standard', 'spacious'];
+            var sanitizeSpacing = function (value) {
+                return spacingValues.indexOf(value) !== -1 ? value : '';
+            };
+            var siteSpacing = sanitizeSpacing(savedSettings.spacing) || 'standard';
+            var currentSpacing = sanitizeSpacing(attributes.spacing) || siteSpacing;
+            var blockClassName = 'credits wp-block-credits-shortcode credits-spacing-' + currentSpacing;
+            var blockProps = useBlockProps ? useBlockProps({ className: blockClassName }) : { className: blockClassName };
             var displayType = currentType === 'via' ? __('Via', textdomain) : __('Source', textdomain);
             var linkName = attributes.name || __('Credit Name', textdomain);
             var linkUrl = attributes.link || '#';
@@ -97,6 +107,19 @@
                         placeholder: 'https://example.com',
                         onChange: function (newLink) {
                             setAttributes({ link: newLink });
+                        }
+                    }),
+                    el(SelectControl, {
+                        label: __('Spacing', textdomain),
+                        value: attributes.spacing || '',
+                        options: [
+                            { label: __('Use site default', textdomain), value: '' },
+                            { label: __('Compact', textdomain), value: 'compact' },
+                            { label: __('Standard', textdomain), value: 'standard' },
+                            { label: __('Spacious', textdomain), value: 'spacious' }
+                        ],
+                        onChange: function (newSpacing) {
+                            setAttributes({ spacing: sanitizeSpacing(newSpacing) });
                         }
                     })
                 )

@@ -24,6 +24,26 @@ div.credits {
     list-style: none !important;
 }
 
+/* Per-credit and site-wide spacing presets. Existing markup defaults to the
+ * standard preset, so upgrades keep the current rhythm unchanged. */
+ul.credits.credits-spacing-compact,
+div.credits.credits-spacing-compact {
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+ul.credits.credits-spacing-standard,
+div.credits.credits-spacing-standard {
+    margin-top: 1.25rem !important;
+    margin-bottom: 1.25rem !important;
+}
+
+ul.credits.credits-spacing-spacious,
+div.credits.credits-spacing-spacious {
+    margin-top: 2rem !important;
+    margin-bottom: 2rem !important;
+}
+
 /* Legacy selectors kept for posts saved before v1.3, which stored static div-based markup */
 ul.credits li.credits,
 div.credits .credits-inner {

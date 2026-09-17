@@ -6,7 +6,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue.svg)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://php.net)
-[![Version](https://img.shields.io/badge/version-1.4.1-green.svg)](https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress)
+[![Version](https://img.shields.io/badge/version-1.5.0-green.svg)](https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress)
 [![License](https://img.shields.io/badge/license-GPLv2-orange.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-PHPUnit%20%7C%20CI-brightgreen.svg)](.github/workflows/) <!-- TODO: replace with real CI status badge once the workflow runs on a public CI service -->
 
@@ -28,6 +28,7 @@ Supports the modern **Gutenberg Block Editor** (with live preview, customizable 
 
 - 🧩 **Gutenberg Block Editor**: Add credits using a native WordPress block (`/credits`) featuring live in-editor previews and block sidebar controls.
 - 🎨 **Custom Accent Colors**: Pick custom badge background, link background, and link text colors directly from the Block Editor sidebar or shortcode parameters.
+- ↕️ **Spacing Presets**: Keep consecutive credits compact, standard, or spacious with a site-wide default and per-credit overrides.
 - ✨ **Micro-Interaction Hover Effects**: Smooth 0.2s CSS transitions with subtle hover elevation and brightness shifts.
 - 📐 **Flush Block Layout Alignment**: Auto-adapts to modern WordPress block themes (Twenty Twenty-Four, Twenty Twenty-Five) to sit 100% flush with paragraph content.
 - 🔒 **Security Hardened**: Full WordPress late-escaping architecture (`esc_url()`, `esc_html()`, `esc_attr()`) and color sanitization (`sanitize_hex_color()`).
@@ -50,6 +51,7 @@ Supports the modern **Gutenberg Block Editor** (with live preview, customizable 
    - **Badge Background Color** (default: `#ef4423`)
    - **Link Background Color** (default: `#E0D9D9`)
    - **Link Text Color** (default: `#ef4423`)
+5. Choose a **Spacing** preset—Use site default, Compact, Standard, or Spacious—for this credit.
 
 ---
 
@@ -70,6 +72,12 @@ Insert shortcodes directly in paragraph blocks, shortcode blocks, or text widget
 #### **Custom Accent Colors Shortcode**
 ```text
 [credits link="https://example.com" type="source" badge_color="#0073aa" link_color="#f0f0f0" link_text_color="#0073aa"]Source Name[/credits]
+```
+
+To control the gap when several credits are stacked, add `spacing="compact"`, `spacing="standard"`, or `spacing="spacious"`. Omit it to use the site-wide default:
+
+```text
+[credits link="https://example.com" spacing="compact"]Source Name[/credits]
 ```
 
 ---
@@ -148,6 +156,11 @@ The plugin is translation-ready via the `credits-shortcode` text domain. If you'
 ---
 
 ## 📜 Changelog
+
+### Version 1.5.0
+- Added site-wide spacing defaults under **Settings → Credits**.
+- Added Compact, Standard, and Spacious spacing presets for each block or shortcode.
+- Added spacing inheritance and validation tests.
 
 ### Version 1.4.1
 - Fixed Gutenberg block registration on WordPress 5.0–5.4.

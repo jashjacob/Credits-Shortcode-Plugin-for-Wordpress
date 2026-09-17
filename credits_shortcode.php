@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Credits Shortcode & Block
-Version: 1.4.1
+Version: 1.5.0
 Plugin URI: https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress
 Description: Add clean Source and Via attribution links with a Gutenberg block, shortcode, or Classic Editor button.
 Author: Jash Jacob
@@ -36,7 +36,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'CREDITS_SHORTCODE_VERSION' ) ) {
-	define( 'CREDITS_SHORTCODE_VERSION', '1.4.1' );
+	define( 'CREDITS_SHORTCODE_VERSION', '1.5.0' );
 }
 
 /**
@@ -110,6 +110,17 @@ function credits_sanitize_type( $value ) {
 }
 
 /**
+ * Sanitize a spacing preset.
+ *
+ * @param mixed $value Raw spacing preset.
+ * @return string Either 'compact', 'standard', 'spacious', or empty.
+ */
+function credits_sanitize_spacing( $value ) {
+	$value = sanitize_key( credits_string_attr( $value ) );
+	return in_array( $value, array( 'compact', 'standard', 'spacious' ), true ) ? $value : '';
+}
+
+/**
  * Sanitize the full settings array for storage.
  *
  * @param mixed $input Raw settings input.
@@ -120,6 +131,7 @@ function credits_sanitize_settings( $input ) {
 
 	return array(
 		'type'            => credits_sanitize_type( isset( $input['type'] ) ? $input['type'] : '' ),
+		'spacing'         => credits_sanitize_spacing( isset( $input['spacing'] ) ? $input['spacing'] : '' ) ?: 'standard',
 		'badge_color'     => credits_sanitize_color( isset( $input['badge_color'] ) ? $input['badge_color'] : '' ),
 		'link_color'      => credits_sanitize_color( isset( $input['link_color'] ) ? $input['link_color'] : '' ),
 		'link_text_color' => credits_sanitize_color( isset( $input['link_text_color'] ) ? $input['link_text_color'] : '' ),
@@ -134,6 +146,7 @@ function credits_sanitize_settings( $input ) {
 function credits_get_settings() {
 	$defaults = array(
 		'type'            => 'source',
+		'spacing'         => 'standard',
 		'badge_color'     => '',
 		'link_color'      => '',
 		'link_text_color' => '',
@@ -148,9 +161,13 @@ function credits_get_settings() {
 		if ( ! array_key_exists( $key, $stored ) ) {
 			continue;
 		}
-		$defaults[ $key ] = ( 'type' === $key )
-			? credits_sanitize_type( $stored[ $key ] )
-			: credits_sanitize_color( $stored[ $key ] );
+		if ( 'type' === $key ) {
+			$defaults[ $key ] = credits_sanitize_type( $stored[ $key ] );
+		} elseif ( 'spacing' === $key ) {
+			$defaults[ $key ] = credits_sanitize_spacing( $stored[ $key ] ) ?: 'standard';
+		} else {
+			$defaults[ $key ] = credits_sanitize_color( $stored[ $key ] );
+		}
 	}
 
 	return $defaults;
@@ -212,6 +229,10 @@ function credits_print_shortcode( $atts, $content = null ) {
 	}
 
 	$settings = credits_get_settings();
+	$spacing  = credits_sanitize_spacing( $attr( 'spacing' ) );
+	if ( '' === $spacing ) {
+		$spacing = $settings['spacing'];
+	}
 
 	$type     = sanitize_key( $attr( 'type' ) );
 	if ( '' === $type ) {
@@ -243,7 +264,7 @@ function credits_print_shortcode( $atts, $content = null ) {
 		$link_text_clr = $settings['link_text_color'];
 	}
 
-	$html  = '<ul class="credits wp-block-credits-shortcode">';
+	$html  = '<ul class="credits wp-block-credits-shortcode credits-spacing-' . esc_attr( $spacing ) . '">';
 	$html .= '<li class="credits">';
 	$html .= '<span class="cre_cate"';
 	if ( '' !== $badge_bg ) {
@@ -370,6 +391,10 @@ function credits_block_attributes() {
 			'type'    => 'string',
 			'default' => '',
 		),
+		'spacing'       => array(
+			'type'    => 'string',
+			'default' => '',
+		),
 		'name'          => array(
 			'type'    => 'string',
 			'default' => '',
@@ -453,6 +478,14 @@ function credits_register_settings() {
 		'credits_shortcode_defaults'
 	);
 
+	add_settings_field(
+		'credits_default_spacing',
+		__( 'Default spacing between credits', 'credits-shortcode' ),
+		'credits_field_default_spacing',
+		'credits-shortcode',
+		'credits_shortcode_defaults'
+	);
+
 	foreach ( array(
 		'badge_color'     => __( 'Badge background color', 'credits-shortcode' ),
 		'link_color'      => __( 'Link background color', 'credits-shortcode' ),
@@ -473,7 +506,7 @@ function credits_register_settings() {
  * Section intro copy.
  */
 function credits_settings_section_intro() {
-	echo '<p>' . esc_html( __( 'These defaults apply when a shortcode or block does not set its own values. Leave colors empty to inherit neutral plugin styling.', 'credits-shortcode' ) ) . '</p>';
+	echo '<p>' . esc_html( __( 'These defaults apply when a shortcode or block does not set its own values. Individual credits can override spacing and colors. Leave colors empty to inherit neutral plugin styling.', 'credits-shortcode' ) ) . '</p>';
 }
 
 /**
@@ -486,6 +519,21 @@ function credits_field_default_type() {
 		<option value="source" <?php selected( 'source', $type ); ?>><?php echo esc_html( __( 'Source', 'credits-shortcode' ) ); ?></option>
 		<option value="via" <?php selected( 'via', $type ); ?>><?php echo esc_html( __( 'Via', 'credits-shortcode' ) ); ?></option>
 	</select>
+	<?php
+}
+
+/**
+ * Default spacing preset dropdown.
+ */
+function credits_field_default_spacing() {
+	$spacing = credits_get_settings()['spacing'];
+	?>
+	<select name="credits_shortcode_settings[spacing]">
+		<option value="compact" <?php selected( 'compact', $spacing ); ?>><?php echo esc_html( __( 'Compact', 'credits-shortcode' ) ); ?></option>
+		<option value="standard" <?php selected( 'standard', $spacing ); ?>><?php echo esc_html( __( 'Standard', 'credits-shortcode' ) ); ?></option>
+		<option value="spacious" <?php selected( 'spacious', $spacing ); ?>><?php echo esc_html( __( 'Spacious', 'credits-shortcode' ) ); ?></option>
+	</select>
+	<p class="description"><?php echo esc_html( __( 'Controls the vertical gap between consecutive credits.', 'credits-shortcode' ) ); ?></p>
 	<?php
 }
 

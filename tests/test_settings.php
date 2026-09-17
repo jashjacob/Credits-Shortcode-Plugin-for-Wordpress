@@ -35,6 +35,23 @@ final class SettingsTest extends TestCase {
 		$this->assertMatchesRegularExpression( '/<a [^>]*style="[^"]*color:\s*#778899/', $out );
 	}
 
+	public function test_site_default_spacing_applies_when_attribute_missing(): void {
+		update_option( 'credits_shortcode_settings', array( 'spacing' => 'compact' ) );
+
+		$out = $this->render( array( 'name' => 'x' ) );
+
+		$this->assertStringContainsString( 'credits-spacing-compact', $out );
+	}
+
+	public function test_explicit_spacing_overrides_site_default(): void {
+		update_option( 'credits_shortcode_settings', array( 'spacing' => 'compact' ) );
+
+		$out = $this->render( array( 'name' => 'x', 'spacing' => 'spacious' ) );
+
+		$this->assertStringContainsString( 'credits-spacing-spacious', $out );
+		$this->assertStringNotContainsString( 'credits-spacing-compact', $out );
+	}
+
 	public function test_explicit_attributes_override_site_defaults(): void {
 		update_option(
 			'credits_shortcode_settings',
@@ -103,6 +120,13 @@ final class SettingsTest extends TestCase {
 		$this->assertSame( '#aabbcc', strtolower( $clean['badge_color'] ) );
 		$this->assertSame( '', $clean['link_color'] );
 		$this->assertSame( '', $clean['link_text_color'] );
+		$this->assertSame( 'standard', $clean['spacing'] );
+	}
+
+	public function test_sanitize_settings_accepts_spacing_presets_only(): void {
+		$this->assertSame( 'compact', credits_sanitize_settings( array( 'spacing' => 'compact' ) )['spacing'] );
+		$this->assertSame( 'spacious', credits_sanitize_settings( array( 'spacing' => 'spacious' ) )['spacing'] );
+		$this->assertSame( 'standard', credits_sanitize_settings( array( 'spacing' => 'wide' ) )['spacing'] );
 	}
 
 	public function test_sanitize_settings_whitelists_type(): void {
