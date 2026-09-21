@@ -46,18 +46,9 @@ final class RendererTest extends TestCase {
 		);
 	}
 
-	public function test_version_constant_is_1_5_0(): void {
+	public function test_version_constant_is_1_6_0(): void {
 		$this->assertTrue( defined( 'CREDITS_SHORTCODE_VERSION' ), 'CREDITS_SHORTCODE_VERSION must be defined' );
-		$this->assertSame( '1.5.0', CREDITS_SHORTCODE_VERSION );
-	}
-
-	public function test_legacy_block_attributes_allow_site_default_type_to_flow_through(): void {
-		$attributes = credits_block_attributes();
-
-		$this->assertArrayHasKey( 'type', $attributes );
-		$this->assertSame( '', $attributes['type']['default'] );
-		$this->assertSame( '#', $attributes['link']['default'] );
-		$this->assertSame( '', $attributes['spacing']['default'] );
+		$this->assertSame( '1.6.0', CREDITS_SHORTCODE_VERSION );
 	}
 
 	public function test_spacing_preset_is_added_to_wrapper_class(): void {

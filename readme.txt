@@ -2,9 +2,9 @@
 Contributors: jashjacob
 Donate link: https://jashjacob.com
 Tags: attribution, source, credits, block, shortcode
-Requires at least: 5.0
+Requires at least: 6.3
 Tested up to: 7.1
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -114,6 +114,11 @@ Yes. When the Classic Editor is active, an Add Credits toolbar button inserts th
 
 == Changelog ==
 
+= 1.6.0 =
+* Requires WordPress 6.3 or newer.
+* Registers the Gutenberg block with Block API version 3 consistently.
+* Removed the legacy Block API version 1 registration fallback.
+
 = 1.5.0 =
 * Added site-wide spacing defaults under Settings > Credits.
 * Added Compact, Standard, and Spacious spacing presets for each block or shortcode.
@@ -149,5 +154,5 @@ Yes. When the Classic Editor is active, an Add Credits toolbar button inserts th
 
 == Upgrade Notice ==
 
-= 1.5.0 =
-Adds configurable spacing for stacked credits. Existing blocks and shortcodes keep the Standard spacing unless you choose another preset.
+= 1.6.0 =
+Requires WordPress 6.3 or newer and registers the Credits Link block with Block API version 3.

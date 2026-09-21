@@ -4,9 +4,9 @@
   <img src="assets/banner-1544x500.png" alt="Credits Shortcode & Block Banner" width="100%" />
 </p>
 
-[![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue.svg)](https://wordpress.org)
+[![WordPress](https://img.shields.io/badge/WordPress-6.3%2B-blue.svg)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://php.net)
-[![Version](https://img.shields.io/badge/version-1.5.0-green.svg)](https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress)
+[![Version](https://img.shields.io/badge/version-1.6.0-green.svg)](https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress)
 [![License](https://img.shields.io/badge/license-GPLv2-orange.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-PHPUnit%20%7C%20CI-brightgreen.svg)](.github/workflows/) <!-- TODO: replace with real CI status badge once the workflow runs on a public CI service -->
 
@@ -157,6 +157,11 @@ The plugin is translation-ready via the `credits-shortcode` text domain. If you'
 
 ## 📜 Changelog
 
+### Version 1.6.0
+- Requires WordPress 6.3 or newer.
+- Registers the Gutenberg block with Block API version 3 consistently.
+- Removed the legacy Block API version 1 registration fallback.
+
 ### Version 1.5.0
 - Added site-wide spacing defaults under **Settings → Credits**.
 - Added Compact, Standard, and Spacious spacing presets for each block or shortcode.
@@ -186,7 +191,7 @@ The plugin is translation-ready via the `credits-shortcode` text domain. If you'
 - ✨ Added micro-interaction hover lift animations and smooth CSS transitions.
 - 📐 Fixed block layout container specificity for modern WordPress Block Themes (Twenty Twenty-Four, Twenty Twenty-Five).
 - 🔒 Hardened shortcode rendering by removing `extract()` and consistently sanitizing and escaping output.
-- 📋 Added official WordPress header tags (`Requires at least: 5.0`, `Requires PHP: 7.4`, `Tested up to: 6.7`).
+- 📋 Added official WordPress compatibility headers (`Requires PHP: 7.4`, `Tested up to: 6.7`).
 
 ### Version 1.2
 - Added TinyMCE editor toolbar button integration.

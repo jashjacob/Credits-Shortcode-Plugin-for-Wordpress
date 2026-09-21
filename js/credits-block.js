@@ -11,10 +11,9 @@
     var __ = (wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__ : function (text) { return text; };
     var textdomain = 'credits-shortcode';
     var savedSettings = (window.creditsShortcodeSettings && typeof window.creditsShortcodeSettings === 'object') ? window.creditsShortcodeSettings : {};
-    var blockApiVersion = savedSettings.block_api_version === 3 ? 3 : 1;
 
     registerBlockType('credits/shortcode', {
-        apiVersion: blockApiVersion,
+        apiVersion: 3,
         title: __('Credits Link', textdomain),
         icon: 'share',
         category: 'widgets',

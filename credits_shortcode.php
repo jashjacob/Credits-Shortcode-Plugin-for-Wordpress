@@ -1,12 +1,12 @@
 <?php
 /*
 Plugin Name: Credits Shortcode & Block
-Version: 1.5.0
+Version: 1.6.0
 Plugin URI: https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress
 Description: Add clean Source and Via attribution links with a Gutenberg block, shortcode, or Classic Editor button.
 Author: Jash Jacob
 Author URI: https://jashjacob.com
-Requires at least: 5.0
+Requires at least: 6.3
 Requires PHP: 7.4
 Tested up to: 7.1
 License: GPLv2 or later
@@ -36,7 +36,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'CREDITS_SHORTCODE_VERSION' ) ) {
-	define( 'CREDITS_SHORTCODE_VERSION', '1.5.0' );
+	define( 'CREDITS_SHORTCODE_VERSION', '1.6.0' );
 }
 
 /**
@@ -174,6 +174,19 @@ function credits_get_settings() {
 }
 
 /**
+ * Return a cache-busting version for plugin assets that can change between
+ * plugin releases or test uploads without changing the public plugin version.
+ *
+ * @return string
+ */
+function credits_asset_version() {
+	$style_path = plugin_dir_path( __FILE__ ) . 'css/style.css';
+	$mtime      = file_exists( $style_path ) ? filemtime( $style_path ) : false;
+
+	return $mtime ? CREDITS_SHORTCODE_VERSION . '.' . $mtime : CREDITS_SHORTCODE_VERSION;
+}
+
+/**
  * Enqueue frontend styles.
  */
 add_action( 'wp_enqueue_scripts', 'credits_enqueue_styles' );
@@ -182,7 +195,7 @@ function credits_enqueue_styles() {
 		'credits-shortcode',
 		plugin_dir_url( __FILE__ ) . 'css/style.css',
 		array(),
-		CREDITS_SHORTCODE_VERSION
+		credits_asset_version()
 	);
 }
 
@@ -303,22 +316,8 @@ function credits_render_block( $attributes ) {
  */
 add_action( 'init', 'credits_register_gutenberg_block' );
 
-/**
- * Select the newest block API version supported by the current WordPress.
- *
- * Block API version 3 was introduced in WordPress 6.3. Older supported
- * versions continue to use the original block API.
- *
- * @return int
- */
-function credits_block_api_version() {
-	global $wp_version;
-
-	return is_string( $wp_version ) && version_compare( $wp_version, '6.3', '>=' ) ? 3 : 1;
-}
-
 function credits_register_gutenberg_block() {
-	if ( ! function_exists( 'register_block_type' ) ) {
+	if ( ! function_exists( 'register_block_type_from_metadata' ) ) {
 		return;
 	}
 
@@ -334,8 +333,7 @@ function credits_register_gutenberg_block() {
 		CREDITS_SHORTCODE_VERSION,
 		true
 	);
-	$editor_settings                      = credits_get_settings();
-	$editor_settings['block_api_version'] = credits_block_api_version();
+	$editor_settings = credits_get_settings();
 	wp_localize_script( 'credits-block-js', 'creditsShortcodeSettings', $editor_settings );
 	if ( function_exists( 'wp_set_script_translations' ) ) {
 		wp_set_script_translations( 'credits-block-js', 'credits-shortcode', plugin_dir_path( __FILE__ ) . 'languages' );
@@ -345,72 +343,15 @@ function credits_register_gutenberg_block() {
 		'credits-shortcode',
 		plugins_url( 'css/style.css', __FILE__ ),
 		array(),
-		CREDITS_SHORTCODE_VERSION
+		credits_asset_version()
 	);
 
 
-	if ( function_exists( 'register_block_type_from_metadata' ) ) {
-		register_block_type_from_metadata(
-			__DIR__ . '/block.json',
-			array(
-				'render_callback' => 'credits_render_block',
-				'api_version'     => credits_block_api_version(),
-			)
-		);
-		return;
-	}
-
-	// register_block_type_from_metadata() was introduced in WordPress 5.5.
-	// Keep the declared WordPress 5.0 minimum working with equivalent settings.
-	register_block_type(
-		'credits/shortcode',
+	register_block_type_from_metadata(
+		__DIR__ . '/block.json',
 		array(
-			'attributes'      => credits_block_attributes(),
-			'editor_script'   => 'credits-block-js',
-			'editor_style'    => 'credits-shortcode',
-			'style'           => 'credits-shortcode',
 			'render_callback' => 'credits_render_block',
 		)
-	);
-}
-
-/**
- * Block attributes used by the WordPress 5.0-5.4 registration fallback.
- *
- * Keep this in sync with block.json and js/credits-block.js.
- *
- * @return array
- */
-function credits_block_attributes() {
-	return array(
-		'link'          => array(
-			'type'    => 'string',
-			'default' => '#',
-		),
-		'type'          => array(
-			'type'    => 'string',
-			'default' => '',
-		),
-		'spacing'       => array(
-			'type'    => 'string',
-			'default' => '',
-		),
-		'name'          => array(
-			'type'    => 'string',
-			'default' => '',
-		),
-		'badgeColor'    => array(
-			'type'    => 'string',
-			'default' => '',
-		),
-		'linkColor'     => array(
-			'type'    => 'string',
-			'default' => '',
-		),
-		'linkTextColor' => array(
-			'type'    => 'string',
-			'default' => '',
-		),
 	);
 }
 

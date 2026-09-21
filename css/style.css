@@ -28,8 +28,8 @@ div.credits {
  * standard preset, so upgrades keep the current rhythm unchanged. */
 ul.credits.credits-spacing-compact,
 div.credits.credits-spacing-compact {
-    margin-top: 0.5rem !important;
-    margin-bottom: 0.5rem !important;
+    margin-top: 0.25rem !important;
+    margin-bottom: 0.25rem !important;
 }
 
 ul.credits.credits-spacing-standard,
@@ -42,6 +42,26 @@ ul.credits.credits-spacing-spacious,
 div.credits.credits-spacing-spacious {
     margin-top: 2rem !important;
     margin-bottom: 2rem !important;
+}
+
+/* A shortcode inserted into a Paragraph block can be serialized as an
+ * invalid <p><ul>...</ul></p> combination. Browsers repair that markup by
+ * leaving an empty paragraph beside the list, so remove the theme's flow
+ * margin from either repaired shape. */
+.wp-block-paragraph:has(> ul.credits),
+.wp-block-paragraph:has(> div.credits),
+.wp-block-paragraph:has(+ ul.credits),
+.wp-block-paragraph:has(+ div.credits) {
+    margin-block-start: 0 !important;
+    margin-block-end: 0 !important;
+}
+
+/* The browser can also leave an empty paragraph after a list repaired from
+ * invalid <p><ul>...</ul></p> markup. Prevent the theme's flow gap there too. */
+ul.credits + p,
+div.credits + p {
+    margin-block-start: 0 !important;
+    margin-block-end: 0 !important;
 }
 
 /* Legacy selectors kept for posts saved before v1.3, which stored static div-based markup */
