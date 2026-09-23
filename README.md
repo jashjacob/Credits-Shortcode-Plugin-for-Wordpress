@@ -140,11 +140,41 @@ Copy or symlink the directory into your site's `/wp-content/plugins/` and activa
 
 ## 🧪 Development & Testing
 
-The plugin ships with a PHPUnit test suite (34 tests) that runs automatically across PHP 7.4–8.4 in GitHub Actions on every push.
+### PHPUnit (runs on every push in GitHub Actions)
+
+The plugin ships with a PHPUnit test suite (**44 tests**, PHP **7.4–8.4** matrix) plus a **WordPress.org release zip** check on PHP 8.3.
 
 ```bash
 composer install
 vendor/bin/phpunit
+bash scripts/build-wp-release.sh
+```
+
+### Full WordPress stack (local or Cloud Agent)
+
+Stub PHPUnit does not boot WordPress. For runtime shortcode, block, and variation checks, use the Cloud Agent scripts (also under `.cursor/` in this repo):
+
+```bash
+./.cursor/cloud-agent-install.sh   # PHP, Composer, MariaDB, WP-CLI
+./.cursor/cloud-agent-start.sh     # WordPress 6.7 + symlinked plugin (admin/admin @ :8080)
+./.cursor/cloud-agent-wp-server.sh # optional: wp server on 8080
+./.cursor/cloud-agent-verify.sh    # lint, PHPUnit, WP shortcode smoke
+./.cursor/cloud-agent-test-variations.sh  # 21 front-end / block scenarios
+./.cursor/run-block-editor-e2e.sh  # Playwright block editor (7 checks)
+```
+
+The block E2E runner sets site default type to **Via** when `.wordpress/` exists and reads the effective default via `CREDITS_E2E_DEFAULT_TYPE` so tests match **Settings → Credits**.
+
+### Optional CI: WordPress smoke workflow
+
+On GitHub, run **Actions → WordPress smoke → Run workflow** (`workflow_dispatch`) to install MariaDB, boot a fresh WordPress copy, and run verify + variation tests. Day-to-day PRs still use fast PHPUnit only.
+
+### Translation template
+
+Regenerate the POT file after changing translatable strings:
+
+```bash
+bash scripts/generate-pot.sh
 ```
 
 ---
