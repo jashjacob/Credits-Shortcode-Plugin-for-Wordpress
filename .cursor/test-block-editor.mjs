@@ -6,6 +6,9 @@ const BASE = 'http://127.0.0.1:8080';
 const ART = '/opt/cursor/artifacts';
 mkdirSync(ART, { recursive: true });
 
+const siteDefaultType = (process.env.CREDITS_E2E_DEFAULT_TYPE || 'via').toLowerCase() === 'via' ? 'via' : 'source';
+const siteDefaultLabel = siteDefaultType === 'via' ? 'Via' : 'Source';
+
 const results = [];
 
 function pass(msg) {
@@ -61,14 +64,14 @@ try {
   await typeSelect.selectOption('');
   await page.waitForTimeout(500);
   let badge = await canvas.locator('.wp-block-credits-shortcode .cre_cate').first().innerText();
-  if (badge.trim() === 'Via') {
-    pass('Preview shows Via when type is Use site default (site default = via)');
+  if (badge.trim() === siteDefaultLabel) {
+    pass(`Preview shows ${siteDefaultLabel} when type is Use site default (site default = ${siteDefaultType})`);
   } else {
-    fail(`Expected Via preview, got "${badge}"`);
+    fail(`Expected ${siteDefaultLabel} preview for site default ${siteDefaultType}, got "${badge}"`);
   }
 
   await page.screenshot({ path: join(ART, 'block-editor-site-default-via.png'), fullPage: false });
-  pass('Screenshot: block-editor-site-default-via.png');
+  pass('Screenshot: block-editor-site-default.png');
 
   await typeSelect.selectOption('source');
   await page.waitForTimeout(500);
@@ -85,10 +88,10 @@ try {
   await typeSelect.selectOption('');
   await page.waitForTimeout(500);
   badge = await canvas.locator('.wp-block-credits-shortcode .cre_cate').first().innerText();
-  if (badge.trim() === 'Via') {
-    pass('Preview returns to Via after re-selecting Use site default');
+  if (badge.trim() === siteDefaultLabel) {
+    pass(`Preview returns to ${siteDefaultLabel} after re-selecting Use site default`);
   } else {
-    fail(`Expected Via again, got "${badge}"`);
+    fail(`Expected ${siteDefaultLabel} again, got "${badge}"`);
   }
 
   const invalidNest = await page.evaluate(() => {

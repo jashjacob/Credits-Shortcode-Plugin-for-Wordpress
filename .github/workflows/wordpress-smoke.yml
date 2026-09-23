@@ -1,0 +1,32 @@
+name: WordPress smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - 'credits_shortcode.php'
+      - 'css/**'
+      - 'js/**'
+      - 'block.json'
+      - '.cursor/**'
+      - 'scripts/**'
+
+jobs:
+  wordpress-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: WordPress install and smoke tests
+        run: |
+          chmod +x .cursor/cloud-agent-install.sh .cursor/cloud-agent-start.sh \
+            .cursor/cloud-agent-verify.sh .cursor/cloud-agent-test-variations.sh
+          ./.cursor/cloud-agent-install.sh
+          ./.cursor/cloud-agent-start.sh
+          ./.cursor/cloud-agent-verify.sh
+          ./.cursor/cloud-agent-test-variations.sh

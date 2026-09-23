@@ -18,9 +18,21 @@
             : text;
     };
 
-    var sanitizeTinyMceShortcodeValue = function (value) {
-        return String(value || '')
-            .replace(/[\x00-\x20\x7f]/g, '')
+    var stripControlChars = function (value) {
+        return String(value || '').replace(/[\x00-\x1f\x7f]/g, '');
+    };
+
+    var sanitizeTinyMceLinkValue = function (value) {
+        return stripControlChars(value)
+            .replace(/"/g, '')
+            .replace(/[\[\]]/g, '')
+            .replace(/[<>]/g, '')
+            .replace(/\s+/g, '')
+            .trim();
+    };
+
+    var sanitizeTinyMceNameValue = function (value) {
+        return stripControlChars(value)
             .replace(/"/g, '')
             .replace(/[\[\]]/g, '')
             .replace(/[<>]/g, '')
@@ -51,8 +63,8 @@
                     return;
                 }
 
-                clink = sanitizeTinyMceShortcodeValue(clink);
-                cname = sanitizeTinyMceShortcodeValue(cname);
+                clink = sanitizeTinyMceLinkValue(clink);
+                cname = sanitizeTinyMceNameValue(cname);
                 if (!clink || !cname) {
                     alert(translate('Link and name are required.'));
                     return;
