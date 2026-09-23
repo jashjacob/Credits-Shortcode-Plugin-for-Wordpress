@@ -1,6 +1,7 @@
 (function (wp) {
     var registerBlockType = wp.blocks.registerBlockType;
     var el = wp.element.createElement;
+    var Fragment = wp.element.Fragment;
     var blockEditor = wp.blockEditor || wp.editor || {};
     var InspectorControls = blockEditor.InspectorControls;
     var PanelColorSettings = blockEditor.PanelColorSettings;
@@ -83,8 +84,9 @@
                     { title: __('Credit Settings', textdomain), initialOpen: true },
                     el(SelectControl, {
                         label: __('Credit Type', textdomain),
-                        value: currentType,
+                        value: attributes.type || '',
                         options: [
+                            { label: __('Use site default', textdomain), value: '' },
                             { label: __('Source', textdomain), value: 'source' },
                             { label: __('Via', textdomain), value: 'via' }
                         ],
@@ -157,21 +159,25 @@
             }
 
             return el(
-                'ul',
-                blockProps,
+                Fragment,
+                null,
                 el(InspectorControls, null, inspectorChildren),
                 el(
-                    'li',
-                    { className: 'credits' },
+                    'ul',
+                    blockProps,
                     el(
-                        'span',
-                        { className: 'cre_cate', style: badgeStyle },
-                        displayType
-                    ),
-                    el(
-                        'span',
-                        { className: 'cre_cate_link', style: linkStyle },
-                        el('a', { href: linkUrl, style: linkTextStyle, onClick: function(e) { e.preventDefault(); } }, linkName)
+                        'li',
+                        { className: 'credits' },
+                        el(
+                            'span',
+                            { className: 'cre_cate', style: badgeStyle },
+                            displayType
+                        ),
+                        el(
+                            'span',
+                            { className: 'cre_cate_link', style: linkStyle },
+                            el('a', { href: linkUrl, style: linkTextStyle, onClick: function(e) { e.preventDefault(); } }, linkName)
+                        )
                     )
                 )
             );
