@@ -1,4 +1,6 @@
 node_modules/
+.wordpress/
+.cursor/bin/wp
 vendor/
 *.zip
 .DS_Store

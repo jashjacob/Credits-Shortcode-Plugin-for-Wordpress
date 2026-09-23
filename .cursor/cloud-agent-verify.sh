@@ -29,4 +29,14 @@ if ( ! str_contains( $html, "TechZei" ) || ! str_contains( $html, "https://techz
 echo $html . "\n";
 '
 
+echo "==> WordPress integration (when initialized)"
+export PATH="$ROOT/.cursor/bin:${PATH}"
+if [ -f "$ROOT/.wordpress/wp-load.php" ]; then
+	wp plugin is-active credits-shortcode --path="$ROOT/.wordpress"
+	wp eval 'echo do_shortcode("[credits link=\"https://example.com/\" type=\"source\"]Example Source[/credits]");' --path="$ROOT/.wordpress" | grep -q 'Example Source'
+	echo "WordPress shortcode render OK"
+else
+	echo "WordPress not initialized yet (run ./.cursor/cloud-agent-start.sh)"
+fi
+
 echo "==> All checks passed"
