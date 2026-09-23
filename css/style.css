@@ -16,9 +16,9 @@ div.credits.wp-block-credits-shortcode {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     display: block !important;
-    text-align: left !important;
-    clear: both !important;
-    box-sizing: border-box !important;
+    text-align: left;
+    clear: both;
+    box-sizing: border-box;
     list-style: none !important;
 }
 
@@ -91,11 +91,12 @@ div.credits .credits-inner:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-ul.credits span,
-div.credits span {
-    padding: 4px 10px !important;
-    display: inline-block !important;
-    box-sizing: border-box !important;
+ul.credits.wp-block-credits-shortcode li.credits span,
+ul.credits li.credits span,
+div.credits .credits-inner span {
+    padding: 4px 10px;
+    display: inline-block;
+    box-sizing: border-box;
     transition: filter 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -111,8 +112,9 @@ div.credits span {
     border-radius: 0 3px 3px 0;
 }
 
-.cre_cate_link a {
-    text-decoration: none !important;
+ul.credits .cre_cate_link a,
+div.credits .cre_cate_link a {
+    text-decoration: none;
     font-weight: 500;
     transition: color 0.2s ease;
 }
@@ -128,6 +130,7 @@ div.credits .credits-inner:hover .cre_cate_link {
     filter: brightness(0.95);
 }
 
-.cre_cate_link a:hover {
-    text-decoration: underline !important;
+ul.credits .cre_cate_link a:hover,
+div.credits .cre_cate_link a:hover {
+    text-decoration: underline;
 }

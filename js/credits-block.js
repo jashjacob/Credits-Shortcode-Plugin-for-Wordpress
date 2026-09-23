@@ -35,7 +35,7 @@
         var schemeMatch = decoded.match(/^([a-zA-Z][a-zA-Z0-9+.\-]*):/);
         if (schemeMatch) {
             var scheme = schemeMatch[1].toLowerCase();
-            if (['http', 'https', 'mailto', 'ftp', 'tel'].indexOf(scheme) === -1) {
+            if (['http', 'https', 'mailto', 'ftp'].indexOf(scheme) === -1) {
                 return '#';
             }
         }
