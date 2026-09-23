@@ -18,6 +18,15 @@
             : text;
     };
 
+    var sanitizeTinyMceShortcodeValue = function (value) {
+        return String(value || '')
+            .replace(/[\x00-\x20\x7f]/g, '')
+            .replace(/"/g, '')
+            .replace(/[\[\]]/g, '')
+            .replace(/[<>]/g, '')
+            .trim();
+    };
+
     tinymce.create('tinymce.plugins.Credits', {
         init: function (ed, url) {
             ed.addCommand('addcredits', function () {
@@ -42,8 +51,12 @@
                     return;
                 }
 
-                clink = String(clink).replace(/"/g, '');
-                cname = String(cname).replace(/\[/g, '').replace(/\]/g, '');
+                clink = sanitizeTinyMceShortcodeValue(clink);
+                cname = sanitizeTinyMceShortcodeValue(cname);
+                if (!clink || !cname) {
+                    alert(translate('Link and name are required.'));
+                    return;
+                }
                 shortcode = '[credits link="' + clink + '" type="' + ctype + '"]' + cname + '[/credits]';
                 ed.execCommand('mceInsertContent', 0, shortcode);
             });

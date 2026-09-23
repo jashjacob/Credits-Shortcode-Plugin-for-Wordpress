@@ -13,6 +13,35 @@
     var textdomain = 'credits-shortcode';
     var savedSettings = (window.creditsShortcodeSettings && typeof window.creditsShortcodeSettings === 'object') ? window.creditsShortcodeSettings : {};
 
+    /**
+     * Match frontend esc_url behavior for editor preview hrefs (not stored attributes).
+     */
+    var sanitizeEditorLinkUrl = function (value) {
+        var raw = String(value || '').trim();
+        if (!raw || raw === '#') {
+            return '#';
+        }
+        var cleaned = raw.replace(/[\x00-\x20\x7f]/g, '');
+        var decoded = cleaned;
+        try {
+            if (typeof document !== 'undefined') {
+                var ta = document.createElement('textarea');
+                ta.innerHTML = cleaned;
+                decoded = ta.value.replace(/[\x00-\x20\x7f]/g, '');
+            }
+        } catch (e) {
+            decoded = cleaned;
+        }
+        var schemeMatch = decoded.match(/^([a-zA-Z][a-zA-Z0-9+.\-]*):/);
+        if (schemeMatch) {
+            var scheme = schemeMatch[1].toLowerCase();
+            if (['http', 'https', 'mailto', 'ftp', 'tel'].indexOf(scheme) === -1) {
+                return '#';
+            }
+        }
+        return cleaned;
+    };
+
     registerBlockType('credits/shortcode', {
         apiVersion: 3,
         title: __('Credits Link', textdomain),
@@ -68,7 +97,7 @@
             var blockProps = useBlockProps ? useBlockProps({ className: blockClassName }) : { className: blockClassName };
             var displayType = currentType === 'via' ? __('Via', textdomain) : __('Source', textdomain);
             var linkName = attributes.name || __('Credit Name', textdomain);
-            var linkUrl = attributes.link || '#';
+            var linkUrl = sanitizeEditorLinkUrl(attributes.link);
 
             var badgeBg = hexColor(attributes.badgeColor) || hexColor(savedSettings.badge_color);
             var linkBg = hexColor(attributes.linkColor) || hexColor(savedSettings.link_color);
