@@ -4,9 +4,7 @@
 .is-layout-constrained > ul.credits,
 .is-layout-constrained > div.credits,
 ul.credits.wp-block-credits-shortcode,
-div.credits.wp-block-credits-shortcode,
-ul.credits,
-div.credits {
+div.credits.wp-block-credits-shortcode {
     max-width: var(--wp--style--global--content-size) !important;
     margin-left: auto !important;
     margin-right: auto !important;
@@ -26,19 +24,22 @@ div.credits {
 
 /* Per-credit and site-wide spacing presets. Existing markup defaults to the
  * standard preset, so upgrades keep the current rhythm unchanged. */
-ul.credits.credits-spacing-compact,
+ul.credits.wp-block-credits-shortcode.credits-spacing-compact,
+.entry-content > ul.credits.credits-spacing-compact,
 div.credits.credits-spacing-compact {
     margin-top: 0.25rem !important;
     margin-bottom: 0.25rem !important;
 }
 
-ul.credits.credits-spacing-standard,
+ul.credits.wp-block-credits-shortcode.credits-spacing-standard,
+.entry-content > ul.credits.credits-spacing-standard,
 div.credits.credits-spacing-standard {
     margin-top: 1.25rem !important;
     margin-bottom: 1.25rem !important;
 }
 
-ul.credits.credits-spacing-spacious,
+ul.credits.wp-block-credits-shortcode.credits-spacing-spacious,
+.entry-content > ul.credits.credits-spacing-spacious,
 div.credits.credits-spacing-spacious {
     margin-top: 2rem !important;
     margin-bottom: 2rem !important;
@@ -48,8 +49,10 @@ div.credits.credits-spacing-spacious {
  * invalid <p><ul>...</ul></p> combination. Browsers repair that markup by
  * leaving an empty paragraph beside the list, so remove the theme's flow
  * margin from either repaired shape. */
+.wp-block-paragraph:has(> ul.credits.wp-block-credits-shortcode),
 .wp-block-paragraph:has(> ul.credits),
 .wp-block-paragraph:has(> div.credits),
+.wp-block-paragraph:has(+ ul.credits.wp-block-credits-shortcode),
 .wp-block-paragraph:has(+ ul.credits),
 .wp-block-paragraph:has(+ div.credits) {
     margin-block-start: 0 !important;
@@ -58,6 +61,7 @@ div.credits.credits-spacing-spacious {
 
 /* The browser can also leave an empty paragraph after a list repaired from
  * invalid <p><ul>...</ul></p> markup. Prevent the theme's flow gap there too. */
+ul.credits.wp-block-credits-shortcode + p,
 ul.credits + p,
 div.credits + p {
     margin-block-start: 0 !important;

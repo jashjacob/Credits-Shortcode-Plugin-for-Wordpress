@@ -187,10 +187,68 @@ function credits_asset_version() {
 }
 
 /**
+ * Whether post content includes the credits block or shortcode.
+ *
+ * @param string|WP_Post|null $post Post object, content string, or post ID.
+ * @return bool
+ */
+function credits_content_includes_credits( $post ) {
+	if ( $post instanceof WP_Post ) {
+		$content = $post->post_content;
+	} elseif ( is_numeric( $post ) ) {
+		$loaded = get_post( (int) $post );
+		$content = $loaded ? $loaded->post_content : '';
+	} else {
+		$content = (string) $post;
+	}
+
+	if ( '' === trim( $content ) ) {
+		return false;
+	}
+
+	if ( function_exists( 'has_block' ) && has_block( 'credits/shortcode', $content ) ) {
+		return true;
+	}
+
+	return has_shortcode( $content, 'credits' );
+}
+
+/**
+ * Whether frontend CSS should load on this response.
+ *
+ * @return bool
+ */
+function credits_should_enqueue_frontend_styles() {
+	if ( is_admin() ) {
+		return false;
+	}
+
+	if ( is_singular() ) {
+		$post_id = get_queried_object_id();
+		return $post_id && credits_content_includes_credits( $post_id );
+	}
+
+	global $wp_query;
+	if ( isset( $wp_query->posts ) && is_array( $wp_query->posts ) ) {
+		foreach ( $wp_query->posts as $post ) {
+			if ( $post instanceof WP_Post && credits_content_includes_credits( $post ) ) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
  * Enqueue frontend styles.
  */
 add_action( 'wp_enqueue_scripts', 'credits_enqueue_styles' );
 function credits_enqueue_styles() {
+	if ( ! credits_should_enqueue_frontend_styles() ) {
+		return;
+	}
+
 	wp_enqueue_style(
 		'credits-shortcode',
 		plugin_dir_url( __FILE__ ) . 'css/style.css',

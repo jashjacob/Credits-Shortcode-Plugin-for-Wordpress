@@ -476,6 +476,83 @@ if ( ! function_exists( 'wp_kses' ) ) {
 }
 
 /* -------------------------------------------------------------------------
+ * Conditional enqueue / query stubs
+ * ---------------------------------------------------------------------- */
+
+if ( ! class_exists( 'WP_Post' ) ) {
+	class WP_Post {
+		/** @var int */
+		public $ID;
+		/** @var string */
+		public $post_content;
+	}
+}
+
+if ( ! class_exists( 'WP_Query' ) ) {
+	class WP_Query {
+		/** @var array<int, WP_Post> */
+		public $posts = array();
+	}
+}
+
+if ( ! function_exists( 'has_shortcode' ) ) {
+	function has_shortcode( $content, $tag ) {
+		$content = (string) $content;
+		$tag     = preg_quote( (string) $tag, '/' );
+		return (bool) preg_match( '/\[' . $tag . '(\s|\]|\/)/', $content );
+	}
+}
+
+if ( ! function_exists( 'has_block' ) ) {
+	function has_block( $block_name, $post = null ) {
+		if ( $post instanceof WP_Post ) {
+			$content = $post->post_content;
+		} else {
+			$content = (string) $post;
+		}
+		return str_contains( $content, '<!-- wp:' . (string) $block_name );
+	}
+}
+
+if ( ! function_exists( 'is_admin' ) ) {
+	function is_admin() {
+		return ! empty( $GLOBALS['credits_test_is_admin'] );
+	}
+}
+
+if ( ! function_exists( 'is_singular' ) ) {
+	function is_singular() {
+		return ! empty( $GLOBALS['credits_test_is_singular'] );
+	}
+}
+
+if ( ! function_exists( 'get_queried_object_id' ) ) {
+	function get_queried_object_id() {
+		return isset( $GLOBALS['credits_test_queried_object'] ) ? (int) $GLOBALS['credits_test_queried_object'] : 0;
+	}
+}
+
+if ( ! function_exists( 'get_post' ) ) {
+	function get_post( $post = null ) {
+		if ( null === $post ) {
+			return null;
+		}
+		$id = (int) $post;
+		if ( isset( $GLOBALS['credits_test_post_store'][ $id ] ) ) {
+			$stored = $GLOBALS['credits_test_post_store'][ $id ];
+			if ( $stored instanceof WP_Post ) {
+				return $stored;
+			}
+			$obj                = new WP_Post();
+			$obj->ID            = $id;
+			$obj->post_content  = isset( $stored->post_content ) ? (string) $stored->post_content : '';
+			return $obj;
+		}
+		return null;
+	}
+}
+
+/* -------------------------------------------------------------------------
  * Load the plugin itself
  * ---------------------------------------------------------------------- */
 
