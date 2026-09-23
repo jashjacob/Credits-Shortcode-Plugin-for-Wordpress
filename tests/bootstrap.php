@@ -510,7 +510,7 @@ if ( ! function_exists( 'has_block' ) ) {
 		} else {
 			$content = (string) $post;
 		}
-		return str_contains( $content, '<!-- wp:' . (string) $block_name );
+		return false !== strpos( $content, '<!-- wp:' . (string) $block_name );
 	}
 }
 
