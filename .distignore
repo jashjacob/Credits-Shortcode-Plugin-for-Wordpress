@@ -1,16 +1,29 @@
+# Git / GitHub
 .git
 .gitignore
 .github
 .distignore
-.DS_Store
 README.md
+.DS_Store
+
+# Composer / PHPUnit (development only)
 tests
-node_modules
 vendor
 composer.json
 composer.lock
 phpunit.xml.dist
+
+# Node (if added later)
+node_modules
 package.json
 package-lock.json
+
+# Cloud Agent & local WordPress dev (GitHub only — not for WordPress.org)
+.cursor
+.wordpress
+scripts
+
+# Plugin directory screenshots/banners live in SVN /assets, not in the trunk zip
 assets
+
 *.zip

@@ -1,7 +1,9 @@
 node_modules/
 .wordpress/
-.cursor/bin/wp
+.cursor/node_modules/
+.cursor/bin/
 vendor/
 *.zip
+credits-shortcode-release.zip
 .DS_Store
 
