@@ -30,3 +30,7 @@ jobs:
 
       - name: Run PHPUnit
         run: vendor/bin/phpunit
+
+      - name: Verify WordPress.org release zip
+        if: matrix.php == '8.3'
+        run: bash scripts/build-wp-release.sh
