@@ -1,136 +1,128 @@
-/* Reset all WordPress theme list indents, entry-content margins, and block layout overrides */
-.entry-content > ul.credits,
-.entry-content > div.credits,
-.is-layout-constrained > ul.credits,
-.is-layout-constrained > div.credits,
-ul.credits.wp-block-credits-shortcode,
-div.credits.wp-block-credits-shortcode {
-    max-width: var(--wp--style--global--content-size) !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    margin-top: 1.25rem !important;
-    margin-bottom: 1.25rem !important;
-    padding: 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    display: block !important;
-    text-align: left;
-    clear: both;
-    box-sizing: border-box;
-    list-style: none !important;
+/**
+ * Credits Shortcode & Block — front-end styles.
+ * Enqueued only when post content includes credits (see credits_enqueue_styles).
+ */
+
+/* --- Shared selector groups (modern + legacy div markup) --- */
+:root {
+	--credits-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	--credits-font-size: 13px;
+	--credits-line-height: 1.4;
+	--credits-radius: 3px;
+	--credits-badge-bg: #1d2327;
+	--credits-badge-text: #ffffff;
+	--credits-link-bg: #f0f0f1;
+	--credits-margin-block: 1.25rem;
+	--credits-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Per-credit and site-wide spacing presets. Existing markup defaults to the
- * standard preset, so upgrades keep the current rhythm unchanged. */
-ul.credits.wp-block-credits-shortcode.credits-spacing-compact,
-.entry-content > ul.credits.credits-spacing-compact,
-div.credits.credits-spacing-compact {
-    margin-top: 0.25rem !important;
-    margin-bottom: 0.25rem !important;
+/* Block / shortcode list wrapper — themes often reset list and flow margins. */
+:is(
+	.entry-content > ul.credits,
+	.entry-content > div.credits,
+	.is-layout-constrained > ul.credits,
+	.is-layout-constrained > div.credits,
+	ul.credits.wp-block-credits-shortcode,
+	div.credits.wp-block-credits-shortcode
+) {
+	box-sizing: border-box;
+	clear: both;
+	display: block !important;
+	list-style: none !important;
+	margin-left: auto !important;
+	margin-right: auto !important;
+	margin-top: var(--credits-margin-block) !important;
+	margin-bottom: var(--credits-margin-block) !important;
+	max-width: var(--wp--style--global--content-size, 100%) !important;
+	padding: 0 !important;
+	text-align: left;
 }
 
-ul.credits.wp-block-credits-shortcode.credits-spacing-standard,
-.entry-content > ul.credits.credits-spacing-standard,
-div.credits.credits-spacing-standard {
-    margin-top: 1.25rem !important;
-    margin-bottom: 1.25rem !important;
+.credits-spacing-compact {
+	--credits-margin-block: 0.25rem;
 }
 
-ul.credits.wp-block-credits-shortcode.credits-spacing-spacious,
-.entry-content > ul.credits.credits-spacing-spacious,
-div.credits.credits-spacing-spacious {
-    margin-top: 2rem !important;
-    margin-bottom: 2rem !important;
+.credits-spacing-standard {
+	--credits-margin-block: 1.25rem;
 }
 
-/* A shortcode inserted into a Paragraph block can be serialized as an
- * invalid <p><ul>...</ul></p> combination. Browsers repair that markup by
- * leaving an empty paragraph beside the list, so remove the theme's flow
- * margin from either repaired shape. */
-.wp-block-paragraph:has(> ul.credits.wp-block-credits-shortcode),
-.wp-block-paragraph:has(> ul.credits),
-.wp-block-paragraph:has(> div.credits),
-.wp-block-paragraph:has(+ ul.credits.wp-block-credits-shortcode),
-.wp-block-paragraph:has(+ ul.credits),
-.wp-block-paragraph:has(+ div.credits) {
-    margin-block-start: 0 !important;
-    margin-block-end: 0 !important;
+.credits-spacing-spacious {
+	--credits-margin-block: 2rem;
 }
 
-/* The browser can also leave an empty paragraph after a list repaired from
- * invalid <p><ul>...</ul></p> markup. Prevent the theme's flow gap there too. */
+/* Invalid <p><ul>…</ul></p> repair: drop stray paragraph margins beside credits. */
+.wp-block-paragraph:has(> :is(ul.credits, div.credits)),
+.wp-block-paragraph:has(+ :is(ul.credits, div.credits)) {
+	margin-block-end: 0 !important;
+	margin-block-start: 0 !important;
+}
+
+:is(ul.credits, div.credits) + p:empty {
+	margin-block-end: 0 !important;
+	margin-block-start: 0 !important;
+}
+
 ul.credits.wp-block-credits-shortcode + p,
 ul.credits + p,
 div.credits + p {
-    margin-block-start: 0 !important;
-    margin-block-end: 0 !important;
+	margin-block-end: 0 !important;
+	margin-block-start: 0 !important;
 }
 
-/* Legacy selectors kept for posts saved before v1.3, which stored static div-based markup */
-ul.credits li.credits,
-div.credits .credits-inner {
-    list-style: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    display: inline-flex !important;
-    align-items: stretch !important;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-    font-size: 13px;
-    line-height: 1.4;
-    border-radius: 3px;
-    overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+/* Single credit row (chip) */
+:is(ul.credits li.credits, div.credits .credits-inner) {
+	align-items: stretch;
+	border-radius: var(--credits-radius);
+	display: inline-flex !important;
+	font-family: var(--credits-font-family);
+	font-size: var(--credits-font-size);
+	line-height: var(--credits-line-height);
+	list-style: none !important;
+	margin: 0 !important;
+	overflow: hidden;
+	padding: 0 !important;
+	transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-/* Micro-interaction hover lift & shadow */
-ul.credits li.credits:hover,
-div.credits .credits-inner:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+:is(ul.credits li.credits, div.credits .credits-inner):hover {
+	box-shadow: var(--credits-shadow-hover);
+	transform: translateY(-1px);
 }
 
-ul.credits.wp-block-credits-shortcode li.credits span,
-ul.credits li.credits span,
-div.credits .credits-inner span {
-    padding: 4px 10px;
-    display: inline-block;
-    box-sizing: border-box;
-    transition: filter 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+:is(ul.credits li.credits, div.credits .credits-inner) span {
+	box-sizing: border-box;
+	display: inline-block;
+	padding: 4px 10px;
+	transition: background-color 0.2s ease, color 0.2s ease, filter 0.2s ease;
 }
 
-.cre_cate {
-    background: #1d2327;
-    color: #ffffff;
-    font-weight: 600;
-    border-radius: 3px 0 0 3px;
+:is(ul.credits, div.credits) .cre_cate {
+	background: var(--credits-badge-bg);
+	border-radius: var(--credits-radius) 0 0 var(--credits-radius);
+	color: var(--credits-badge-text);
+	font-weight: 600;
 }
 
-.cre_cate_link {
-    background: #f0f0f1;
-    border-radius: 0 3px 3px 0;
+:is(ul.credits, div.credits) .cre_cate_link {
+	background: var(--credits-link-bg);
+	border-radius: 0 var(--credits-radius) var(--credits-radius) 0;
 }
 
-ul.credits .cre_cate_link a,
-div.credits .cre_cate_link a {
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s ease;
+:is(ul.credits, div.credits) .cre_cate_link a {
+	color: inherit;
+	font-weight: 500;
+	text-decoration: none;
+	transition: color 0.2s ease;
 }
 
-/* Hover effects */
-ul.credits li.credits:hover .cre_cate,
-div.credits .credits-inner:hover .cre_cate {
-    filter: brightness(1.1);
+:is(ul.credits li.credits, div.credits .credits-inner):hover .cre_cate {
+	filter: brightness(1.1);
 }
 
-ul.credits li.credits:hover .cre_cate_link,
-div.credits .credits-inner:hover .cre_cate_link {
-    filter: brightness(0.95);
+:is(ul.credits li.credits, div.credits .credits-inner):hover .cre_cate_link {
+	filter: brightness(0.95);
 }
 
-ul.credits .cre_cate_link a:hover,
-div.credits .cre_cate_link a:hover {
-    text-decoration: underline;
+:is(ul.credits, div.credits) .cre_cate_link a:hover {
+	text-decoration: underline;
 }
