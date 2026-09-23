@@ -1,6 +1,7 @@
 node_modules/
 .wordpress/
-.cursor/bin/wp
+.cursor/node_modules/
+.cursor/bin/
 vendor/
 *.zip
 .DS_Store
