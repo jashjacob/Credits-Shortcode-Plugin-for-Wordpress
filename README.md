@@ -167,7 +167,7 @@ The block E2E runner sets site default type to **Via** when `.wordpress/` exists
 
 ### Optional CI: WordPress smoke workflow
 
-On GitHub, run **Actions → WordPress smoke → Run workflow** (`workflow_dispatch`) to install MariaDB, boot a fresh WordPress copy, and run verify + variation tests. Day-to-day PRs still use fast PHPUnit only.
+On GitHub, run **Actions → WordPress smoke → Run workflow** (`workflow_dispatch`) or rely on pushes to `master` that touch plugin paths. The workflow uses a **MySQL 8 service** and `scripts/ci-wordpress-smoke.sh` (PHPUnit + WP shortcode smoke + 21 variation tests). Day-to-day PRs still use fast PHPUnit only.
 
 ### Translation template
 
