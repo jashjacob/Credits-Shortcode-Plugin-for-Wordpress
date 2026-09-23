@@ -106,6 +106,23 @@ final class SettingsTest extends TestCase {
 		$this->assertStringContainsString( '>Via</span>', $out );
 	}
 
+	public function test_empty_type_attribute_uses_site_default_like_block_editor(): void {
+		update_option(
+			'credits_shortcode_settings',
+			array(
+				'type'            => 'via',
+				'spacing'         => 'standard',
+				'badge_color'     => '',
+				'link_color'      => '',
+				'link_text_color' => '',
+			)
+		);
+
+		$out = $this->render( array( 'type' => '', 'name' => 'x' ) );
+
+		$this->assertStringContainsString( '>Via</span>', $out );
+	}
+
 	public function test_sanitize_settings_keeps_valid_and_drops_invalid_values(): void {
 		$clean = credits_sanitize_settings(
 			array(
