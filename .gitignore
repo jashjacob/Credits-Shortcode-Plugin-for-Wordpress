@@ -4,5 +4,6 @@ node_modules/
 .cursor/bin/
 vendor/
 *.zip
+credits-shortcode-release.zip
 .DS_Store
 

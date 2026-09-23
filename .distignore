@@ -21,6 +21,7 @@ package-lock.json
 # Cloud Agent & local WordPress dev (GitHub only — not for WordPress.org)
 .cursor
 .wordpress
+scripts
 
 # Plugin directory screenshots/banners live in SVN /assets, not in the trunk zip
 assets
