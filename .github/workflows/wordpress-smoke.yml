@@ -2,6 +2,15 @@ name: WordPress smoke
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'credits_shortcode.php'
+      - 'css/**'
+      - 'js/**'
+      - 'block.json'
+      - '.cursor/**'
+      - 'scripts/**'
+      - '.github/workflows/wordpress-smoke.yml'
   push:
     branches:
       - master
