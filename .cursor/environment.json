@@ -1,5 +1,12 @@
 {
   "name": "Credits Shortcode WordPress Plugin",
-  "snapshot": "snapshot-20260923-bdd3b330-b91c-40d7-9321-2ccc65a070c8",
-  "install": "./.cursor/cloud-agent-install.sh"
+  "snapshot": "snapshot-20260923-7c8d0d0a-a6a6-4aee-8db4-e3553fec3fcf",
+  "install": "./.cursor/cloud-agent-install.sh",
+  "start": "./.cursor/cloud-agent-start.sh",
+  "terminals": [
+    {
+      "name": "WordPress",
+      "command": "./.cursor/cloud-agent-wp-server.sh"
+    }
+  ]
 }
