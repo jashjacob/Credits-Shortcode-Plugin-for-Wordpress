@@ -118,6 +118,7 @@ Yes. When the Classic Editor is active, an Add Credits toolbar button inserts th
 * Requires WordPress 6.3 or newer.
 * Registers the Gutenberg block with Block API version 3 consistently.
 * Removed the legacy Block API version 1 registration fallback.
+* Refactored front-end CSS with design tokens, scoped selectors, and fewer `!important` overrides while keeping block-theme layout compatibility.
 
 = 1.5.0 =
 * Added site-wide spacing defaults under Settings > Credits.

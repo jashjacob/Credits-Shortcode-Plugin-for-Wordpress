@@ -95,19 +95,17 @@ If you use the Classic Editor plugin:
 You can also override the default appearance in **Appearance > Customize > Additional CSS**:
 
 ```css
-/* Custom background color for Source / Via badge */
-.cre_cate {
+/* Scoped selectors match the plugin stylesheet (higher specificity helps on block themes). */
+ul.credits .cre_cate {
     background: #0073aa !important;
     font-style: normal;
 }
 
-/* Custom background color for link container */
-.cre_cate_link {
+ul.credits .cre_cate_link {
     background: #f0f0f0 !important;
 }
 
-/* Custom link text color on hover */
-.cre_cate_link a:hover {
+ul.credits .cre_cate_link a:hover {
     text-decoration: underline !important;
 }
 ```
@@ -142,7 +140,7 @@ Copy or symlink the directory into your site's `/wp-content/plugins/` and activa
 
 ### PHPUnit (runs on every push in GitHub Actions)
 
-The plugin ships with a PHPUnit test suite (**44 tests**, PHP **7.4–8.4** matrix) plus a **WordPress.org release zip** check on PHP 8.3.
+The plugin ships with a PHPUnit test suite (**46 tests**, PHP **7.4–8.4** matrix) plus a **WordPress.org release zip** check on PHP 8.3.
 
 ```bash
 composer install
