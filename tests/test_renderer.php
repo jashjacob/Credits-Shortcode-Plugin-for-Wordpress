@@ -10,6 +10,7 @@ final class RendererTest extends TestCase {
 
 	protected function setUp(): void {
 		$GLOBALS['credits_test_options'] = array();
+		unset( $GLOBALS['credits_test_block_wrapper_attributes'] );
 	}
 
 	/**
@@ -46,9 +47,9 @@ final class RendererTest extends TestCase {
 		);
 	}
 
-	public function test_version_constant_is_1_6_0(): void {
+	public function test_version_constant_is_1_6_1(): void {
 		$this->assertTrue( defined( 'CREDITS_SHORTCODE_VERSION' ), 'CREDITS_SHORTCODE_VERSION must be defined' );
-		$this->assertSame( '1.6.0', CREDITS_SHORTCODE_VERSION );
+		$this->assertSame( '1.6.1', CREDITS_SHORTCODE_VERSION );
 	}
 
 	public function test_spacing_preset_is_added_to_wrapper_class(): void {
@@ -246,5 +247,58 @@ final class RendererTest extends TestCase {
 		$out = $this->render( array( 'name' => array( 'deep' => 'array' ), 'link' => new stdClass(), 'badgeColor' => 1.5 ) );
 		$this->assertIsString( $out );
 		$this->assertStringContainsString( 'Credit Link', $out );
+	}
+
+	/* ---------------------------------------------------------------------
+	 * Block wrapper custom CSS class preservation
+	 * ------------------------------------------------------------------ */
+
+	public function test_block_render_preserves_custom_class_from_advanced_panel(): void {
+		$this->assertTrue( function_exists( 'credits_render_block' ), 'credits_render_block() must exist per the plugin contract' );
+
+		$GLOBALS['credits_test_block_wrapper_attributes'] = 'class="wp-block-credits-shortcode my-custom-class"';
+		$out = credits_render_block( array( 'name' => 'x', 'className' => 'my-custom-class' ) );
+
+		$this->assertMatchesRegularExpression( '/<ul class="[^"]*\bmy-custom-class\b[^"]*"/', $out );
+	}
+
+	public function test_block_render_does_not_duplicate_default_wrapper_class(): void {
+		$GLOBALS['credits_test_block_wrapper_attributes'] = 'class="wp-block-credits-shortcode"';
+		$out = credits_render_block( array( 'name' => 'x' ) );
+
+		$this->assertSame( 1, substr_count( $out, 'wp-block-credits-shortcode' ), 'Default block class must appear exactly once' );
+	}
+
+	public function test_block_render_merges_multiple_custom_classes(): void {
+		$GLOBALS['credits_test_block_wrapper_attributes'] = 'class="wp-block-credits-shortcode  align-me   another-class"';
+		$out = credits_render_block( array( 'name' => 'x' ) );
+
+		$this->assertStringContainsString( 'align-me', $out );
+		$this->assertStringContainsString( 'another-class', $out );
+	}
+
+	public function test_block_render_sanitizes_hostile_custom_class(): void {
+		$GLOBALS['credits_test_block_wrapper_attributes'] = 'class="wp-block-credits-shortcode" onmouseover="alert(1)"';
+		$out = credits_render_block( array( 'name' => 'x' ) );
+
+		$this->assertStringNotContainsStringIgnoringCase( 'onmouseover', $out );
+		$this->assertNoEventHandlerAttribute( $out );
+	}
+
+	public function test_shortcode_rendering_is_independent_of_block_wrapper_context(): void {
+		// A block elsewhere on the page leaving wrapper state behind must never
+		// leak into a plain [credits] shortcode call's output.
+		$GLOBALS['credits_test_block_wrapper_attributes'] = 'class="wp-block-credits-shortcode leaked-block-class"';
+		$out = $this->render( array( 'name' => 'x' ) );
+
+		$this->assertStringNotContainsString( 'leaked-block-class', $out );
+	}
+
+	public function test_block_render_without_custom_class_matches_shortcode_output(): void {
+		$GLOBALS['credits_test_block_wrapper_attributes'] = 'class="wp-block-credits-shortcode"';
+		$block_out    = credits_render_block( array( 'name' => 'x', 'link' => 'https://example.com/' ) );
+		$shortcode_out = $this->render( array( 'name' => 'x', 'link' => 'https://example.com/' ) );
+
+		$this->assertSame( $shortcode_out, $block_out );
 	}
 }

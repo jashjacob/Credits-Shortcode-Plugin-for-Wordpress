@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Credits Shortcode & Block
-Version: 1.6.0
+Version: 1.6.1
 Plugin URI: https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress
 Description: Add clean Source and Via attribution links with a Gutenberg block, shortcode, or Classic Editor button.
 Author: Jash Jacob
@@ -36,7 +36,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'CREDITS_SHORTCODE_VERSION' ) ) {
-	define( 'CREDITS_SHORTCODE_VERSION', '1.6.0' );
+	define( 'CREDITS_SHORTCODE_VERSION', '1.6.1' );
 }
 
 /**
@@ -96,6 +96,31 @@ function credits_sanitize_color( $color ) {
 	}
 
 	return is_string( $hex ) ? $hex : '';
+}
+
+/**
+ * Turn a space-separated class list into sanitized, deduplicated class tokens.
+ *
+ * @param string $class_list Raw class names, space separated.
+ * @return string[] Sanitized class names, empty tokens removed.
+ */
+function credits_sanitize_class_list( $class_list ) {
+	$class_list = trim( credits_string_attr( $class_list ) );
+	if ( '' === $class_list ) {
+		return array();
+	}
+
+	$classes = array();
+	foreach ( preg_split( '/\s+/', $class_list ) as $class_name ) {
+		$sanitized = function_exists( 'sanitize_html_class' )
+			? sanitize_html_class( $class_name )
+			: preg_replace( '/[^A-Za-z0-9_-]/', '', $class_name );
+		if ( '' !== $sanitized ) {
+			$classes[] = $sanitized;
+		}
+	}
+
+	return $classes;
 }
 
 /**
@@ -271,11 +296,14 @@ function credits_load_textdomain() {
  * Sanitize/validate first. Escape only when a value is concatenated into HTML,
  * using the function that matches that context.
  *
- * @param array       $atts    Shortcode or block attributes.
- * @param string|null $content Optional shortcode inner content (the name).
+ * @param array       $atts          Shortcode or block attributes.
+ * @param string|null $content       Optional shortcode inner content (the name).
+ * @param string      $wrapper_class Extra wrapper class(es) from the active block context.
+ *                                   Never populated for shortcode calls, so shortcode
+ *                                   output stays independent of any block wrapper.
  * @return string
  */
-function credits_print_shortcode( $atts, $content = null ) {
+function credits_print_shortcode( $atts, $content = null, $wrapper_class = '' ) {
 	if ( ! is_array( $atts ) ) {
 		$atts = array();
 	}
@@ -335,7 +363,12 @@ function credits_print_shortcode( $atts, $content = null ) {
 		$link_text_clr = $settings['link_text_color'];
 	}
 
-	$html  = '<ul class="credits wp-block-credits-shortcode credits-spacing-' . esc_attr( $spacing ) . '">';
+	$wrapper_classes = array_merge(
+		array( 'credits', 'wp-block-credits-shortcode', 'credits-spacing-' . $spacing ),
+		credits_sanitize_class_list( $wrapper_class )
+	);
+
+	$html  = '<ul class="' . esc_attr( implode( ' ', $wrapper_classes ) ) . '">';
 	$html .= '<li class="credits">';
 	$html .= '<span class="cre_cate"';
 	if ( '' !== $badge_bg ) {
@@ -360,13 +393,39 @@ function credits_print_shortcode( $atts, $content = null ) {
 add_shortcode( 'credits', 'credits_print_shortcode' );
 
 /**
+ * Read any custom CSS class the author added in the block's Advanced panel.
+ *
+ * Prefers get_block_wrapper_attributes() (WP 5.6+) so classes added by core
+ * block supports (not just the saved "className" attribute) are preserved;
+ * falls back to the raw attribute on older WordPress. The block's own
+ * default "wp-block-credits-shortcode" class is stripped since the renderer
+ * already adds it, avoiding a duplicate.
+ *
+ * @param array $attributes Block attributes.
+ * @return string Extra class(es), space separated.
+ */
+function credits_get_block_wrapper_class( $attributes ) {
+	if ( function_exists( 'get_block_wrapper_attributes' ) ) {
+		$wrapper_attributes = get_block_wrapper_attributes();
+		if ( is_string( $wrapper_attributes ) && preg_match( '/\bclass="([^"]*)"/', $wrapper_attributes, $matches ) ) {
+			$classes = array_diff( credits_sanitize_class_list( $matches[1] ), array( 'wp-block-credits-shortcode' ) );
+			return implode( ' ', $classes );
+		}
+		return '';
+	}
+
+	return isset( $attributes['className'] ) ? credits_string_attr( $attributes['className'] ) : '';
+}
+
+/**
  * Block render callback. Pass attributes only so inner block HTML is not treated as the name.
  *
  * @param array $attributes Block attributes.
  * @return string
  */
 function credits_render_block( $attributes ) {
-	return credits_print_shortcode( is_array( $attributes ) ? $attributes : array() );
+	$attributes = is_array( $attributes ) ? $attributes : array();
+	return credits_print_shortcode( $attributes, null, credits_get_block_wrapper_class( $attributes ) );
 }
 
 /**

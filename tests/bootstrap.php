@@ -68,6 +68,21 @@ if ( ! function_exists( 'register_block_type_from_metadata' ) ) {
 	}
 }
 
+if ( ! function_exists( 'get_block_wrapper_attributes' ) ) {
+	/**
+	 * WP 5.6+. Return value is controlled per test via
+	 * $GLOBALS['credits_test_block_wrapper_attributes'] so both a bare
+	 * default class and one carrying an editor-added custom class can be
+	 * exercised without needing a full block-rendering context.
+	 */
+	function get_block_wrapper_attributes( $extra_attributes = array() ) {
+		if ( array_key_exists( 'credits_test_block_wrapper_attributes', $GLOBALS ) ) {
+			return $GLOBALS['credits_test_block_wrapper_attributes'];
+		}
+		return 'class="wp-block-credits-shortcode"';
+	}
+}
+
 if ( ! function_exists( 'wp_register_script' ) ) {
 	function wp_register_script( $handle, $src, $deps = array(), $ver = false, $in_footer = false ) {
 		return true;
@@ -259,6 +274,13 @@ if ( ! function_exists( 'wp_add_inline_script' ) ) {
 /* -------------------------------------------------------------------------
  * Sanitization
  * ---------------------------------------------------------------------- */
+
+if ( ! function_exists( 'sanitize_html_class' ) ) {
+	function sanitize_html_class( $class, $fallback = '' ) {
+		$sanitized = preg_replace( '/[^A-Za-z0-9_-]/', '', (string) $class );
+		return '' !== $sanitized ? $sanitized : $fallback;
+	}
+}
 
 if ( ! function_exists( 'sanitize_key' ) ) {
 	function sanitize_key( $key ) {
