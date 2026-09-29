@@ -36,7 +36,9 @@ The initial review was completed on September 18, 2026 against version 1.5.0. Th
 
    Acceptance: the integration suite detects the API version issue from step 1 when that fix is reverted. Saving and reloading a block retains its name, URL, type, colors, spacing, and custom class.
 
-   Main files: `tests/`, `.github/workflows/ci.yml`, `composer.json`, and PHPUnit configuration.
+   Main files: `tests/`, `scripts/ci-local.sh`, `composer.json`, and PHPUnit configuration.
+
+   Note: CI now runs locally through `scripts/ci-local.sh` (`composer ci`, `composer ci:full`) and a pre-push hook; the GitHub Actions workflows were removed. Any "add to CI" bullet above now means adding a stage to that script, and the PHP version matrix is no longer exercised.
 
 3. **Make individual credits easier to edit.**
 
@@ -74,7 +76,7 @@ The initial review was completed on September 18, 2026 against version 1.5.0. Th
 
    - [ ] Replace unconditional front-end CSS loading with a loading strategy that covers blocks and shortcodes, including widgets, templates, reusable content, and programmatic rendering. Avoid relying solely on scanning the current post.
    - [ ] Verify that styles arrive in time to prevent unstyled credits. Keep the change separate if reliable loading across the supported environments needs further work.
-   - [ ] Update the README's old color defaults and outdated test count. Use a real CI status badge.
+   - [ ] Update the README's old color defaults and outdated test count. The CI badge now points at `scripts/ci-local.sh` since there is no hosted CI to report status.
    - [ ] Document site defaults, override precedence, link-opening behavior, empty-link behavior, and the updated Classic Editor workflow.
    - [ ] Refresh screenshots after the UI changes are stable.
    - [ ] Keep plugin headers, block metadata, changelogs, and release versions consistent. Set "Tested up to" from completed compatibility checks.
@@ -83,7 +85,7 @@ The initial review was completed on September 18, 2026 against version 1.5.0. Th
 
    Acceptance: pages without credits avoid unnecessary plugin CSS where the supported loading strategy allows it; all credit locations remain styled; the installation package and documentation match the shipped behavior.
 
-   Main files: `credits_shortcode.php`, `README.md`, `readme.txt`, `.distignore`, `.github/workflows/ci.yml`, and release assets.
+   Main files: `credits_shortcode.php`, `README.md`, `readme.txt`, `.distignore`, `scripts/ci-local.sh`, and release assets.
 
 6. **Add grouped credits as a separate feature release.**
 

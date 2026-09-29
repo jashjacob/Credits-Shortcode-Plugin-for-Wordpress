@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Boot WordPress against a TCP MySQL instance (GitHub Actions service or local).
+# Boot WordPress against a TCP MySQL instance and run the smoke checks.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -31,10 +31,6 @@ wait_for_mysql() {
 	echo "MySQL not reachable at ${DB_HOST} as ${DB_USER}" >&2
 	return 1
 }
-
-if [ -n "${GITHUB_ACTIONS:-}" ]; then
-	rm -rf "$WP_DIR"
-fi
 
 mkdir -p "$WP_DIR/wp-content/plugins"
 

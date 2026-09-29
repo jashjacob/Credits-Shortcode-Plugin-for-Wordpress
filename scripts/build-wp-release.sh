@@ -27,7 +27,7 @@ rm -f "$OUT"
 
 echo "Built $OUT"
 echo "Contents:"
-unzip -l "$OUT" | tail -n +4 | head -n -2
+unzip -l "$OUT" | tail -n +4 | sed '$d' | sed '$d'
 
 if unzip -l "$OUT" | grep -q '\.cursor/'; then
 	echo "ERROR: .cursor still in zip" >&2
