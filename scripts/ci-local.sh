@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Local CI. Fast tier (default): lint, PHPUnit, JS syntax, release zip.
+# Local CI. Fast tier (default): lint, PHPUnit, JS syntax and tests, release zip.
 # --integration adds the PHPUnit suite against a real WordPress (SQLite, no MySQL).
-# --e2e adds the Playwright block-editor test (SQLite, no MySQL; first run downloads Chromium).
+# --e2e adds the Playwright block-editor and Classic Editor tests (SQLite, no MySQL; first run
+#   downloads Chromium unless CREDITS_E2E_CHROMIUM points at an existing browser).
 # --full adds both plus the WordPress smoke test (needs MySQL).
 # Pick the integration WordPress with WP_VERSION (default: latest release).
 set -euo pipefail
@@ -19,9 +20,9 @@ for arg in "$@"; do
 		--full) FULL=1; INTEGRATION=1; E2E=1 ;;
 		-h|--help)
 			echo "Usage: scripts/ci-local.sh [--integration] [--e2e] [--full]"
-			echo "  (default)      PHP lint, PHPUnit, JS syntax check, release zip check"
+			echo "  (default)      PHP lint, PHPUnit, JS syntax check and tests, release zip check"
 			echo "  --integration  also PHPUnit against a real WordPress (SQLite; WP_VERSION=x.y to pick one)"
-			echo "  --e2e          also the Playwright block-editor test (SQLite; downloads Chromium once)"
+			echo "  --e2e          also the Playwright block-editor and Classic Editor tests (SQLite; downloads Chromium once)"
 			echo "  --full         everything above plus the WordPress smoke test (MySQL required)"
 			exit 0
 			;;
@@ -53,10 +54,17 @@ echo "OK"
 
 step "JavaScript syntax"
 if command -v node >/dev/null 2>&1; then
-	for file in js/credits-block.js credits_shortcode_plugin.js .cursor/test-block-editor.mjs; do
+	for file in js/credits-block.js credits_shortcode_plugin.js .cursor/test-block-editor.mjs .cursor/test-classic-editor.mjs; do
 		node --check "$file"
 	done
 	echo "OK"
+else
+	echo "node not found; skipping"
+fi
+
+step "JavaScript tests"
+if command -v node >/dev/null 2>&1; then
+	node --test tests/js/*.test.js
 else
 	echo "node not found; skipping"
 fi
@@ -93,7 +101,7 @@ if [ "$INTEGRATION" -eq 1 ]; then
 fi
 
 if [ "$E2E" -eq 1 ]; then
-	step "Block editor e2e (real WordPress editor)"
+	step "Editor e2e (real block editor and Classic Editor)"
 	bash scripts/run-editor-e2e.sh
 fi
 

@@ -522,8 +522,20 @@ function credits_buttons() {
 	}
 	if ( get_user_option( 'rich_editing' ) === 'true' ) {
 		add_filter( 'mce_external_plugins', 'credits_add_buttons' );
+		add_filter( 'mce_external_languages', 'credits_add_button_languages' );
 		add_filter( 'mce_buttons', 'credits_register_buttons' );
 	}
+}
+
+/**
+ * Register the Classic Editor dialog's translations with TinyMCE.
+ *
+ * @param array $languages Plugin slug => translation file path.
+ * @return array
+ */
+function credits_add_button_languages( $languages ) {
+	$languages['credits'] = plugin_dir_path( __FILE__ ) . 'tinymce-i18n.php';
+	return $languages;
 }
 
 function credits_add_buttons( $plugin_array ) {

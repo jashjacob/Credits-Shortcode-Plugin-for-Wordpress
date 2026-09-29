@@ -21,7 +21,7 @@ function fail(msg) {
   console.error('FAIL:', msg);
 }
 
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({ headless: true, executablePath: process.env.CREDITS_E2E_CHROMIUM || undefined });
 const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
 
 try {

@@ -46,6 +46,16 @@ final class RenderingTest extends Credits_Integration_TestCase {
 		$this->assertStringContainsString( 'rel="noopener noreferrer"', $html );
 	}
 
+	public function test_shortcode_saved_by_the_classic_editor_keeps_the_query_string_intact(): void {
+		// TinyMCE serializes "&" as "&amp;" and the dialog percent-encodes "[]", so this is
+		// what reaches do_shortcode(). "&copy=2" must not turn into a copyright sign.
+		$html = do_shortcode( '[credits link="https://example.com/a?x=1&amp;copy=2&amp;b%5B%5D=3" type="via"]Tom &amp; Jerry[/credits]' );
+
+		preg_match( '/<a href="([^"]*)"[^>]*>([^<]*)<\/a>/', $html, $m );
+		$this->assertSame( 'https://example.com/a?x=1&copy=2&b%5B%5D=3', html_entity_decode( $m[1] ) );
+		$this->assertSame( 'Tom & Jerry', html_entity_decode( $m[2] ) );
+	}
+
 	public function test_shortcode_accepts_the_name_as_an_attribute(): void {
 		$html = do_shortcode( '[credits name="Attribute Name" link="https://example.com/"]' );
 
