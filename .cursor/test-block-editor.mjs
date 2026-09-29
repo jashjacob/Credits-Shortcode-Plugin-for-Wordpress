@@ -3,7 +3,7 @@ import { mkdirSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 
-const BASE = 'http://127.0.0.1:8080';
+const BASE = process.env.CREDITS_E2E_BASE || 'http://127.0.0.1:8080';
 const ART = process.env.CREDITS_E2E_ARTIFACTS || join(tmpdir(), 'credits-e2e-artifacts');
 mkdirSync(ART, { recursive: true });
 
@@ -36,10 +36,14 @@ try {
   await page.waitForSelector('iframe[name="editor-canvas"]', { timeout: 60000 });
   await page.waitForTimeout(2000);
 
+  // A fresh install shows a welcome guide that blocks clicks.
+  await page.evaluate(() => wp.data.dispatch('core/preferences').set('core/edit-post', 'welcomeGuide', false));
+  await page.locator('.components-modal__screen-overlay').waitFor({ state: 'detached', timeout: 10000 }).catch(() => {});
+
   const canvas = page.frameLocator('iframe[name="editor-canvas"]');
 
   await canvas.locator('h1.wp-block-post-title, [aria-label="Add title"]').first().click({ timeout: 30000 });
-  await page.keyboard.type('Block editor P1 test');
+  await page.keyboard.type('Credits editor e2e');
   await page.keyboard.press('Enter');
   await page.waitForTimeout(500);
 
@@ -107,6 +111,79 @@ try {
   } else {
     fail(`Inspector nesting check: ${invalidNest}`);
   }
+
+  // Edit values, save, reload the editor, then check the published page.
+  const settingsPanel = page.locator('.components-panel__body').filter({ hasText: 'Credit Settings' });
+  await settingsPanel.getByLabel('Credit Type').selectOption('via');
+  await settingsPanel.getByLabel('Source / Via Name').fill('E2E Source Name');
+  await settingsPanel.getByLabel('Link URL').fill('https://example.com/e2e?a=1&b=2');
+  await settingsPanel.getByLabel('Spacing').selectOption('spacious');
+
+  await page.getByRole('button', { name: 'Advanced', exact: true }).click();
+  await page.getByLabel('Additional CSS class(es)').fill('e2e-custom-class');
+  await page.keyboard.press('Tab');
+  await page.waitForTimeout(500);
+
+  await page.evaluate(() => wp.data.dispatch('core/editor').editPost({ status: 'publish' }));
+  await page.evaluate(() => wp.data.dispatch('core/editor').savePost());
+  await page.waitForFunction(() => {
+    const editor = wp.data.select('core/editor');
+    return !editor.isSavingPost() && editor.getCurrentPost().status === 'publish';
+  }, null, { timeout: 60000 });
+  const permalink = await page.evaluate(() => wp.data.select('core/editor').getPermalink());
+  pass('Edited credit saved and published');
+
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('iframe[name="editor-canvas"]', { timeout: 60000 });
+  await page.waitForTimeout(2000);
+  const reloaded = page.frameLocator('iframe[name="editor-canvas"]');
+  await reloaded.locator('.wp-block-credits-shortcode').first().click();
+  await page.waitForTimeout(800);
+
+  const panel = page.locator('.components-panel__body').filter({ hasText: 'Credit Settings' });
+  const persisted = {
+    name: await panel.getByLabel('Source / Via Name').inputValue(),
+    link: await panel.getByLabel('Link URL').inputValue(),
+    type: await panel.getByLabel('Credit Type').inputValue(),
+    spacing: await panel.getByLabel('Spacing').inputValue(),
+  };
+  const expected = { name: 'E2E Source Name', link: 'https://example.com/e2e?a=1&b=2', type: 'via', spacing: 'spacious' };
+  if (JSON.stringify(persisted) === JSON.stringify(expected)) {
+    pass('Name, URL, type and spacing persist after saving and reloading the editor');
+  } else {
+    fail(`Values changed after reload: ${JSON.stringify(persisted)}`);
+  }
+
+  const editorClasses = await reloaded.locator('ul.wp-block-credits-shortcode').first().getAttribute('class');
+  if ((editorClasses || '').split(/\s+/).includes('e2e-custom-class')) {
+    pass('Custom CSS class persists after reload');
+  } else {
+    fail(`Custom class missing in editor after reload: ${editorClasses}`);
+  }
+
+  await page.goto(permalink, { waitUntil: 'domcontentloaded' });
+  const published = page.locator('ul.wp-block-credits-shortcode');
+  const publishedClasses = ((await published.first().getAttribute('class')) || '').split(/\s+/);
+  const badgeText = (await published.first().locator('.cre_cate').innerText()).trim();
+  const anchor = published.first().locator('a');
+  const publishedHref = await anchor.getAttribute('href');
+  const publishedName = (await anchor.innerText()).trim();
+  const publishedTarget = await anchor.getAttribute('target');
+  const ok =
+    (await published.count()) === 1 &&
+    publishedClasses.includes('e2e-custom-class') &&
+    publishedClasses.includes('credits-spacing-spacious') &&
+    publishedClasses.filter((c) => c === 'wp-block-credits-shortcode').length === 1 &&
+    badgeText === 'Via' &&
+    publishedName === 'E2E Source Name' &&
+    publishedHref === 'https://example.com/e2e?a=1&b=2' &&
+    publishedTarget === '_blank';
+  if (ok) {
+    pass('Published page shows the edited credit with its custom class');
+  } else {
+    fail(`Published output mismatch: ${JSON.stringify({ publishedClasses, badgeText, publishedName, publishedHref, publishedTarget })}`);
+  }
+  await page.screenshot({ path: join(ART, 'published-credit.png'), fullPage: false });
 } catch (err) {
   fail(String(err));
   await page.screenshot({ path: join(ART, 'block-editor-error.png'), fullPage: true }).catch(() => {});

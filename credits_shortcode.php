@@ -291,7 +291,7 @@ function credits_load_textdomain() {
 }
 
 /**
- * Render the credits shortcode and dynamic block.
+ * Render one credit for the shortcode and the dynamic block.
  *
  * Sanitize/validate first. Escape only when a value is concatenated into HTML,
  * using the function that matches that context.
@@ -299,11 +299,9 @@ function credits_load_textdomain() {
  * @param array       $atts          Shortcode or block attributes.
  * @param string|null $content       Optional shortcode inner content (the name).
  * @param string      $wrapper_class Extra wrapper class(es) from the active block context.
- *                                   Never populated for shortcode calls, so shortcode
- *                                   output stays independent of any block wrapper.
  * @return string
  */
-function credits_print_shortcode( $atts, $content = null, $wrapper_class = '' ) {
+function credits_render_credit( $atts, $content = null, $wrapper_class = '' ) {
 	if ( ! is_array( $atts ) ) {
 		$atts = array();
 	}
@@ -390,6 +388,19 @@ function credits_print_shortcode( $atts, $content = null, $wrapper_class = '' ) 
 	return wp_kses( $html, credits_allowed_html() );
 }
 
+/**
+ * Shortcode callback. WordPress passes the shortcode tag as a third argument,
+ * so this deliberately accepts only the two it uses: the tag must never reach
+ * the renderer, and shortcode output stays independent of any block wrapper.
+ *
+ * @param array       $atts    Shortcode attributes.
+ * @param string|null $content Optional inner content (the name).
+ * @return string
+ */
+function credits_print_shortcode( $atts, $content = null ) {
+	return credits_render_credit( $atts, $content );
+}
+
 add_shortcode( 'credits', 'credits_print_shortcode' );
 
 /**
@@ -425,7 +436,7 @@ function credits_get_block_wrapper_class( $attributes ) {
  */
 function credits_render_block( $attributes ) {
 	$attributes = is_array( $attributes ) ? $attributes : array();
-	return credits_print_shortcode( $attributes, null, credits_get_block_wrapper_class( $attributes ) );
+	return credits_render_credit( $attributes, null, credits_get_block_wrapper_class( $attributes ) );
 }
 
 /**

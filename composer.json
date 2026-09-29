@@ -15,17 +15,12 @@
 	"require-dev": {
 		"phpunit/phpunit": "^9.6"
 	},
-	"autoload-dev": {
-		"classmap": [
-			"tests/"
-		],
-		"files": [
-			"tests/bootstrap.php"
-		]
-	},
 	"scripts": {
 		"test": "phpunit",
+		"test:integration": "phpunit -c phpunit-integration.xml.dist",
 		"ci": "bash scripts/ci-local.sh",
+		"ci:integration": "bash scripts/ci-local.sh --integration",
+		"ci:e2e": "bash scripts/ci-local.sh --e2e",
 		"ci:full": "bash scripts/ci-local.sh --full",
 		"setup-hooks": "git config core.hooksPath scripts/git-hooks"
 	},
