@@ -6,7 +6,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.3%2B-blue.svg)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://php.net)
-[![Version](https://img.shields.io/badge/version-1.6.0-green.svg)](https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress)
+[![Version](https://img.shields.io/badge/version-1.6.1-green.svg)](https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress)
 [![License](https://img.shields.io/badge/license-GPLv2-orange.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-PHPUnit%20%7C%20CI-brightgreen.svg)](.github/workflows/) <!-- TODO: replace with real CI status badge once the workflow runs on a public CI service -->
 
@@ -186,6 +186,9 @@ The plugin is translation-ready via the `credits-shortcode` text domain. If you'
 ---
 
 ## 📜 Changelog
+
+### Version 1.6.1
+- Fixed the Gutenberg block dropping a custom CSS class added in the editor's Advanced panel from the published output.
 
 ### Version 1.6.0
 - Requires WordPress 6.3 or newer.

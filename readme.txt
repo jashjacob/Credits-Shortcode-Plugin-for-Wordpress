@@ -4,7 +4,7 @@ Donate link: https://jashjacob.com
 Tags: attribution, source, credits, block, shortcode
 Requires at least: 6.3
 Tested up to: 7.1
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -113,6 +113,9 @@ Yes. When the Classic Editor is active, an Add Credits toolbar button inserts th
 2. Credits Link settings in the Gutenberg block sidebar.
 
 == Changelog ==
+
+= 1.6.1 =
+* Fixed the Gutenberg block dropping a custom CSS class added in the editor's Advanced panel from the published output.
 
 = 1.6.0 =
 * Requires WordPress 6.3 or newer.
