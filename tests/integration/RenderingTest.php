@@ -109,6 +109,47 @@ final class RenderingTest extends Credits_Integration_TestCase {
 	}
 
 	/* ---------------------------------------------------------------------
+	 * Open in new tab
+	 * ------------------------------------------------------------------ */
+
+	public function test_credits_open_in_a_new_tab_unless_told_otherwise(): void {
+		// A block saved before the option existed has no newTab attribute at all.
+		foreach (
+			array(
+				do_blocks( '<!-- wp:credits/shortcode {"name":"Old","link":"https://example.com/"} /-->' ),
+				do_shortcode( '[credits link="https://example.com/"]Old[/credits]' ),
+			) as $html
+		) {
+			$this->assertStringContainsString( 'target="_blank"', $html );
+			$this->assertStringContainsString( 'rel="noopener noreferrer"', $html );
+		}
+	}
+
+	public function test_block_can_open_in_the_same_tab(): void {
+		$html = $this->render_credit_block( array( 'name' => 'Same tab', 'link' => 'https://example.com/', 'newTab' => false ) );
+
+		$this->assertStringContainsString( 'href="https://example.com/"', $html );
+		$this->assertStringNotContainsString( 'target=', $html );
+		$this->assertStringNotContainsString( 'rel=', $html );
+	}
+
+	public function test_shortcode_can_open_in_the_same_tab_with_either_spelling(): void {
+		foreach ( array( 'newtab', 'new_tab', 'newTab' ) as $attribute ) {
+			$html = do_shortcode( '[credits link="https://example.com/" ' . $attribute . '="false"]Same tab[/credits]' );
+
+			$this->assertStringContainsString( 'href="https://example.com/"', $html, $attribute );
+			$this->assertStringNotContainsString( 'target=', $html, $attribute );
+		}
+	}
+
+	public function test_shortcode_and_block_agree_on_link_opening(): void {
+		$this->assertSame(
+			do_shortcode( '[credits link="https://example.com/" newtab="false"]Same[/credits]' ),
+			$this->render_credit_block( array( 'name' => 'Same', 'link' => 'https://example.com/', 'newTab' => false ) )
+		);
+	}
+
+	/* ---------------------------------------------------------------------
 	 * Site defaults and overrides
 	 * ------------------------------------------------------------------ */
 

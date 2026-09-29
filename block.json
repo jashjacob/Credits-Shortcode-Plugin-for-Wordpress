@@ -37,6 +37,10 @@
     "linkTextColor": {
       "type": "string",
       "default": ""
+    },
+    "newTab": {
+      "type": "boolean",
+      "default": true
     }
   },
   "editorScript": "credits-block-js",

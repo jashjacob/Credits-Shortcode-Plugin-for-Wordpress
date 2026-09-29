@@ -146,6 +146,32 @@ function credits_sanitize_spacing( $value ) {
 }
 
 /**
+ * Whether a credit's link opens in a new tab.
+ *
+ * Credits have always opened in a new tab, so an absent, empty or unrecognised
+ * value keeps that behavior; only an explicit "false"-style value opts out.
+ * WordPress lowercases shortcode attribute names, hence the aliases: the block
+ * saves "newTab", shortcodes use "newtab" or "new_tab".
+ *
+ * @param array $atts Shortcode or block attributes.
+ * @return bool
+ */
+function credits_parse_new_tab( $atts ) {
+	foreach ( array( 'newTab', 'new_tab', 'newtab' ) as $key ) {
+		if ( ! array_key_exists( $key, $atts ) ) {
+			continue;
+		}
+		if ( is_bool( $atts[ $key ] ) ) {
+			return $atts[ $key ];
+		}
+		$value = strtolower( trim( credits_string_attr( $atts[ $key ] ) ) );
+		return ! in_array( $value, array( '0', 'false', 'no', 'off' ), true );
+	}
+
+	return true;
+}
+
+/**
  * Sanitize the full settings array for storage.
  *
  * @param mixed $input Raw settings input.
@@ -378,7 +404,10 @@ function credits_render_credit( $atts, $content = null, $wrapper_class = '' ) {
 		$html .= ' style="' . esc_attr( safecss_filter_attr( 'background-color: ' . $link_bg ) ) . '"';
 	}
 	$html .= '>';
-	$html .= '<a href="' . esc_url( $link ) . '" target="_blank" rel="noopener noreferrer"';
+	$html .= '<a href="' . esc_url( $link ) . '"';
+	if ( credits_parse_new_tab( $atts ) ) {
+		$html .= ' target="_blank" rel="noopener noreferrer"';
+	}
 	if ( '' !== $link_text_clr ) {
 		$html .= ' style="' . esc_attr( safecss_filter_attr( 'color: ' . $link_text_clr ) ) . '"';
 	}

@@ -9,6 +9,7 @@
     var PanelBody = wp.components.PanelBody;
     var SelectControl = wp.components.SelectControl;
     var TextControl = wp.components.TextControl;
+    var ToggleControl = wp.components.ToggleControl;
     var __ = (wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__ : function (text) { return text; };
     var textdomain = 'credits-shortcode';
     var savedSettings = (window.creditsShortcodeSettings && typeof window.creditsShortcodeSettings === 'object') ? window.creditsShortcodeSettings : {};
@@ -75,6 +76,10 @@
             linkTextColor: {
                 type: 'string',
                 default: ''
+            },
+            newTab: {
+                type: 'boolean',
+                default: true
             }
         },
 
@@ -137,6 +142,13 @@
                         placeholder: 'https://example.com',
                         onChange: function (newLink) {
                             setAttributes({ link: newLink });
+                        }
+                    }),
+                    el(ToggleControl, {
+                        label: __('Open in new tab', textdomain),
+                        checked: attributes.newTab !== false,
+                        onChange: function (newTab) {
+                            setAttributes({ newTab: !!newTab });
                         }
                     }),
                     el(SelectControl, {
