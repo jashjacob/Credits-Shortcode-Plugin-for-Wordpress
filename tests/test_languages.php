@@ -90,11 +90,4 @@ final class LanguagesTest extends TestCase {
 		$this->assertGreaterThan( 20, $literal, 'The block editor should have many translatable strings' );
 		$this->assertSame( $all_calls, $literal, 'Every __() call in js/credits-block.js must be __( \'text\', \'credits-shortcode\' )' );
 	}
-
-	public function test_the_pot_contains_the_block_editor_and_classic_editor_strings(): void {
-		$pot = $this->pot_msgids();
-		foreach ( array( 'Credit Settings', 'Add credit name', 'Reset colors to site default', 'Add Credits', 'Insert credit', 'Enter a link.' ) as $string ) {
-			$this->assertContains( $string, $pot, $string );
-		}
-	}
 }

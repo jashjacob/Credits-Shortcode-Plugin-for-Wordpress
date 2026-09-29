@@ -20,12 +20,7 @@ $credits_mce_strings = array(
 	'Via'                        => __( 'Via', 'credits-shortcode' ),
 	'Name'                       => __( 'Name', 'credits-shortcode' ),
 	'Link URL'                   => __( 'Link URL', 'credits-shortcode' ),
-	'Open in new tab'            => __( 'Open in new tab', 'credits-shortcode' ),
-	'Insert credit'              => __( 'Insert credit', 'credits-shortcode' ),
-	'Cancel'                     => __( 'Cancel', 'credits-shortcode' ),
 	'Enter a name and a link.'   => __( 'Enter a name and a link.', 'credits-shortcode' ),
-	'Enter a name.'              => __( 'Enter a name.', 'credits-shortcode' ),
-	'Enter a link.'              => __( 'Enter a link.', 'credits-shortcode' ),
 	'Use a link that starts with http://, https://, mailto: or ftp://, or a relative address.' => __( 'Use a link that starts with http://, https://, mailto: or ftp://, or a relative address.', 'credits-shortcode' ),
 );
 

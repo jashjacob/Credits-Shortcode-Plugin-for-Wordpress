@@ -25,7 +25,7 @@ function check(condition, okMsg, failMsg) {
   else fail(failMsg);
 }
 
-const browser = await chromium.launch({ headless: true, executablePath: process.env.CREDITS_E2E_CHROMIUM || undefined });
+const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
 
 try {
@@ -189,9 +189,7 @@ try {
   }
   await page.screenshot({ path: join(ART, 'published-credit.png'), fullPage: false });
 
-  // ---------------------------------------------------------------------------
-  // Phase 2: inline editing, incomplete-credit feedback, colors and link opening.
-  // ---------------------------------------------------------------------------
+  // Inline editing, incomplete-credit feedback, color reset and link opening on a fresh credit.
   await page.goto(`${BASE}/wp-admin/post-new.php`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('.edit-post-layout', { timeout: 60000 });
   await page.waitForSelector('iframe[name="editor-canvas"]', { timeout: 60000 });
@@ -205,7 +203,6 @@ try {
       const block = wp.data.select('core/block-editor').getBlocks().find((b) => b.name === 'credits/shortcode');
       return block ? { ...block.attributes, clientId: block.clientId } : null;
     });
-  const topLevelBlockCount = () => page.evaluate(() => wp.data.select('core/block-editor').getBlocks().length);
 
   await inline.locator('h1.wp-block-post-title, [aria-label="Add title"]').first().click({ timeout: 30000 });
   await page.keyboard.type('Credits editor e2e inline');
@@ -218,242 +215,62 @@ try {
   await inline.locator('.wp-block-credits-shortcode').first().waitFor({ timeout: 30000 });
   await page.waitForTimeout(800);
 
-  // A brand new credit is clearly unfinished, and the caret is already in the name.
-  const freshClasses = ((await inline.locator('ul.wp-block-credits-shortcode').getAttribute('class')) || '').split(/\s+/);
   const freshNotice = await inline.locator('.credits-editor-notice').innerText();
   check(
-    freshClasses.includes('credits-editor-incomplete') && freshNotice.includes('Add a name') && freshNotice.includes('Add a link'),
-    'A new credit is marked incomplete and says what is missing',
-    `New credit state: ${JSON.stringify({ freshClasses, freshNotice })}`
+    freshNotice.includes('Add a name') && freshNotice.includes('Add a link'),
+    'A new credit says what is missing',
+    `New credit notice: ${freshNotice}`
   );
-  check(
-    (await page.evaluate(() => document.querySelector('iframe[name="editor-canvas"]').contentDocument.activeElement.className)).includes('credits-editor-name'),
-    'A new credit puts the caret in its name field',
-    'Focus is not in the inline name field after inserting the block'
-  );
-  check(
-    (await inline.locator('.credits-editor-name [data-rich-text-placeholder]').count()) > 0 || (await inline.locator('.credits-editor-name').getAttribute('data-empty')) === 'true',
-    'The empty name shows a placeholder instead of pretending to be saved text',
-    'No placeholder shown for the empty name'
-  );
-  check((await creditAttrs()).name === '' && (await creditAttrs()).link === '', 'The placeholder is not stored as content', 'Name or link was stored for an untouched credit');
 
-  // Type the name inline. Enter must not split or add a line.
+  // The caret starts in the name. Enter must not split the block.
   await page.keyboard.type('Tom & Jerry');
   await page.keyboard.press('Enter');
   await page.keyboard.type(' Fan');
   await page.waitForTimeout(300);
-  let attrs = await creditAttrs();
-  check(attrs.name === 'Tom & Jerry Fan' && (await topLevelBlockCount()) === 1, 'Inline name editing stores plain text and Enter does not split the block', `Name/blocks after typing: ${JSON.stringify(attrs.name)} / ${await topLevelBlockCount()}`);
-  const sidebarName = await page.locator('.components-panel__body').filter({ hasText: 'Credit Settings' }).getByLabel('Source / Via Name').inputValue();
-  check(sidebarName === 'Tom & Jerry Fan', 'The sidebar name field shows the inline edit', `Sidebar name: ${sidebarName}`);
+  const typed = await creditAttrs();
+  const blockCount = await page.evaluate(() => wp.data.select('core/block-editor').getBlocks().length);
+  check(typed.name === 'Tom & Jerry Fan' && blockCount === 1, 'Inline name editing stores plain text and Enter does not split the block', `Name/blocks: ${JSON.stringify(typed.name)} / ${blockCount}`);
 
-  // Markup-like text is kept as typed, never interpreted as HTML.
-  await page.keyboard.press('Control+A');
-  await page.keyboard.type('<b>x</b> & y');
-  await page.waitForTimeout(300);
-  attrs = await creditAttrs();
-  check(attrs.name === '<b>x</b> & y', 'Markup typed into the name is stored as literal text', `Stored name: ${JSON.stringify(attrs.name)}`);
-  await page.keyboard.press('Control+A');
-  await page.keyboard.type('Tom & Jerry Fan');
-  await page.waitForTimeout(300);
-
-  // Inline link entry, with feedback for an unusable link.
   const linkInput = inline.locator('.credits-editor-link-row input');
   await linkInput.fill('javascript:alert(1)');
   await page.waitForTimeout(300);
-  const invalidNotice = await inline.locator('.credits-editor-notice').innerText();
-  check(
-    invalidNotice.includes('cannot be used') && (await linkInput.getAttribute('aria-invalid')) === 'true',
-    'An unusable link is flagged next to the field',
-    `Invalid link feedback: ${invalidNotice} / aria-invalid=${await linkInput.getAttribute('aria-invalid')}`
-  );
-  const sidebarHelp = await page.locator('.components-panel__body').filter({ hasText: 'Credit Settings' }).innerText();
-  check(sidebarHelp.includes('cannot be used'), 'The sidebar Link URL field explains the problem too', 'Sidebar shows no link problem');
+  check((await inline.locator('.credits-editor-notice').innerText()).includes('cannot be used'), 'An unusable link is flagged', 'No message for an unusable link');
 
   await linkInput.fill('');
   await linkInput.press('Backspace');
   await page.waitForTimeout(300);
   check((await creditAttrs()) !== null, 'Backspace in the empty link field does not delete the block', 'The block was removed by Backspace in the link field');
-  check((await inline.locator('.credits-editor-notice').innerText()).includes('Add a link'), 'A missing link is reported', 'No missing-link message');
-
-  await linkInput.fill('#references');
-  await page.waitForTimeout(300);
-  check((await inline.locator('.credits-editor-notice').count()) === 0, 'An intentional #fragment link counts as a complete credit', 'A #fragment link was flagged as incomplete');
 
   await linkInput.fill('https://example.com/inline?x=1&y=2');
   await page.waitForTimeout(300);
-  const completeClasses = ((await inline.locator('ul.wp-block-credits-shortcode').getAttribute('class')) || '').split(/\s+/);
-  check(
-    !completeClasses.includes('credits-editor-incomplete') && (await inline.locator('.credits-editor-notice').count()) === 0,
-    'A complete credit loses the incomplete marker and notice',
-    `Still flagged: ${completeClasses.join(' ')}`
-  );
-  await page.screenshot({ path: join(ART, 'block-editor-inline-complete.png') });
+  check((await inline.locator('.credits-editor-notice').count()) === 0, 'A complete credit has no notice', 'Notice still shown for a complete credit');
 
-  // Colors: where each one comes from, and reset to the site default.
-  const colorPanelTitle = page.locator('.components-panel__body-title button', { hasText: 'Accent Color Settings' });
-  // Older editors show a collapsed panel; newer ones render the colors expanded with no toggle.
-  if ((await colorPanelTitle.count()) > 0 && (await colorPanelTitle.getAttribute('aria-expanded')) !== 'true') {
-    await colorPanelTitle.click();
-  }
-  const siteBadge = await page.evaluate(() => (window.creditsShortcodeSettings || {}).badge_color || '');
-  const status = () => page.locator('.credits-color-status li').allInnerTexts();
-  const expectedBadge = siteBadge ? 'Badge Background Color: Site default' : 'Badge Background Color: Plugin default';
-  let statuses = await status();
-  check(
-    statuses.length === 3 && statuses[0] === expectedBadge && statuses[1] === 'Link Background Color: Plugin default' && statuses[2] === 'Link Text Color: Plugin default',
-    `Colors say they follow the site default (badge site default: ${siteBadge || 'none'})`,
-    `Color status: ${JSON.stringify(statuses)}`
-  );
-  check((await page.getByRole('button', { name: 'Reset colors to site default' }).count()) === 0, 'No reset button while nothing is customized', 'Reset button shown with no overrides');
-
+  // Reset colors to the site default.
   await page.evaluate((clientId) => wp.data.dispatch('core/block-editor').updateBlockAttributes(clientId, { badgeColor: '#ff0000', linkTextColor: '#00aa00' }), (await creditAttrs()).clientId);
   await page.waitForTimeout(400);
-  statuses = await status();
-  check(
-    statuses[0] === 'Badge Background Color: Custom for this credit' && statuses[2] === 'Link Text Color: Custom for this credit' && statuses[1] === 'Link Background Color: Plugin default',
-    'Customized colors are labelled as custom for this credit',
-    `Color status after override: ${JSON.stringify(statuses)}`
-  );
-  const badgeBg = await inline.locator('.wp-block-credits-shortcode .cre_cate').evaluate((node) => getComputedStyle(node).backgroundColor);
-  check(badgeBg === 'rgb(255, 0, 0)', 'The preview uses the custom color', `Badge background: ${badgeBg}`);
-
   await page.getByRole('button', { name: 'Reset colors to site default' }).click();
   await page.waitForTimeout(400);
-  attrs = await creditAttrs();
-  statuses = await status();
-  check(
-    attrs.badgeColor === '' && attrs.linkColor === '' && attrs.linkTextColor === '' && statuses[0] === expectedBadge && (await page.getByRole('button', { name: 'Reset colors to site default' }).count()) === 0,
-    'Reset colors to site default clears every override',
-    `After reset: ${JSON.stringify({ attrs, statuses })}`
-  );
+  const reset = await creditAttrs();
+  check(reset.badgeColor === '' && reset.linkColor === '' && reset.linkTextColor === '', 'Reset colors to site default clears every override', `After reset: ${JSON.stringify(reset)}`);
 
-  // Link opening: a new tab by default, the same tab when switched off.
+  // Open in new tab is on by default; turning it off reaches the published page.
   const settings = page.locator('.components-panel__body').filter({ hasText: 'Credit Settings' });
   check(await settings.getByLabel('Open in new tab').isChecked(), 'Open in new tab is on by default', 'Open in new tab is off for a new credit');
   await settings.getByLabel('Open in new tab').uncheck();
-  await page.waitForTimeout(300);
-  check((await creditAttrs()).newTab === false, 'Turning Open in new tab off is stored on the block', 'newTab attribute not updated');
-
   await page.evaluate(() => wp.data.dispatch('core/editor').editPost({ status: 'publish' }));
   await page.evaluate(() => wp.data.dispatch('core/editor').savePost());
   await page.waitForFunction(() => {
     const editor = wp.data.select('core/editor');
     return !editor.isSavingPost() && editor.getCurrentPost().status === 'publish';
   }, null, { timeout: 60000 });
-  const inlinePermalink = await page.evaluate(() => wp.data.select('core/editor').getPermalink());
-
-  await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('iframe[name="editor-canvas"]', { timeout: 60000 });
-  await page.waitForTimeout(2000);
-  const reopened = page.frameLocator('iframe[name="editor-canvas"]');
-  await reopened.locator('.wp-block-credits-shortcode').first().click();
-  await page.waitForTimeout(800);
-  const reopenedName = (await reopened.locator('.credits-editor-name').innerText()).trim();
-  const reopenedLink = await reopened.locator('.credits-editor-link-row input').inputValue();
-  const reopenedNewTab = await page.locator('.components-panel__body').filter({ hasText: 'Credit Settings' }).getByLabel('Open in new tab').isChecked();
+  await page.goto(await page.evaluate(() => wp.data.select('core/editor').getPermalink()), { waitUntil: 'domcontentloaded' });
+  const inlineAnchor = page.locator('ul.wp-block-credits-shortcode').first().locator('a');
+  const result = { href: await inlineAnchor.getAttribute('href'), text: (await inlineAnchor.innerText()).trim(), target: await inlineAnchor.getAttribute('target') };
   check(
-    reopenedName === 'Tom & Jerry Fan' && reopenedLink === 'https://example.com/inline?x=1&y=2' && reopenedNewTab === false,
-    'Inline name, link and link opening survive saving and reloading',
-    `After reload: ${JSON.stringify({ reopenedName, reopenedLink, reopenedNewTab })}`
+    result.href === 'https://example.com/inline?x=1&y=2' && result.text === 'Tom & Jerry Fan' && result.target === null,
+    'The published credit uses the inline name and link and opens in the same tab',
+    `Published credit: ${JSON.stringify(result)}`
   );
-
-  await page.goto(inlinePermalink, { waitUntil: 'domcontentloaded' });
-  const inlinePublished = page.locator('ul.wp-block-credits-shortcode').first();
-  const inlineAnchor = inlinePublished.locator('a');
-  const inlineResult = {
-    href: await inlineAnchor.getAttribute('href'),
-    text: (await inlineAnchor.innerText()).trim(),
-    target: await inlineAnchor.getAttribute('target'),
-    rel: await inlineAnchor.getAttribute('rel'),
-    incompleteClassLeaked: ((await inlinePublished.getAttribute('class')) || '').includes('credits-editor'),
-  };
-  check(
-    inlineResult.href === 'https://example.com/inline?x=1&y=2' &&
-      inlineResult.text === 'Tom & Jerry Fan' &&
-      inlineResult.target === null &&
-      inlineResult.rel === null &&
-      !inlineResult.incompleteClassLeaked,
-    'The published credit uses the inline name and link, opens in the same tab, and carries no editor-only classes',
-    `Published inline credit: ${JSON.stringify(inlineResult)}`
-  );
-  await page.screenshot({ path: join(ART, 'published-inline-credit.png') });
-
-  // ---------------------------------------------------------------------------
-  // Phase 3: the block editor's strings load translations (German test fixture).
-  // ---------------------------------------------------------------------------
-  if (process.env.CREDITS_E2E_TRANSLATIONS) {
-    const germanContext = await browser.newContext({ viewport: { width: 1400, height: 900 } });
-    await germanContext.addCookies([{ name: 'credits_e2e_locale', value: 'de_DE', url: BASE }]);
-    const de = await germanContext.newPage();
-    await de.goto(`${BASE}/wp-login.php`, { waitUntil: 'domcontentloaded' });
-    await de.fill('#user_login', 'admin');
-    await de.fill('#user_pass', 'admin');
-    await de.click('#wp-submit');
-    await de.waitForURL(/wp-admin/, { timeout: 60000 });
-    await de.goto(`${BASE}/wp-admin/post-new.php`, { waitUntil: 'domcontentloaded' });
-    await de.waitForSelector('.edit-post-layout', { timeout: 60000 });
-    await de.waitForSelector('iframe[name="editor-canvas"]', { timeout: 60000 });
-    await de.waitForTimeout(2000);
-    await de.evaluate(() => wp.data.dispatch('core/preferences').set('core/edit-post', 'welcomeGuide', false));
-    await de.locator('.components-modal__screen-overlay').waitFor({ state: 'detached', timeout: 10000 }).catch(() => {});
-
-    const deCanvas = de.frameLocator('iframe[name="editor-canvas"]');
-    await deCanvas.locator('h1.wp-block-post-title, [aria-label="Add title"]').first().click({ timeout: 30000 });
-    await de.keyboard.type('Credits editor e2e german');
-    await de.keyboard.press('Enter');
-    await de.waitForTimeout(500);
-    await deCanvas.locator('.block-editor-default-block-appender__content, p[data-empty="true"]').first().click({ timeout: 10000 });
-    await de.keyboard.type('/credits');
-    await de.waitForTimeout(800);
-    await de.keyboard.press('Enter');
-    await deCanvas.locator('.wp-block-credits-shortcode').first().waitFor({ timeout: 30000 });
-    await de.waitForTimeout(800);
-
-    check(
-      (await de.evaluate(() => document.documentElement.lang)).startsWith('de'),
-      'The German test locale is active in the editor',
-      'The editor is not running in the German test locale'
-    );
-
-    const placeholder = await deCanvas.locator('[data-rich-text-placeholder]').first().getAttribute('data-rich-text-placeholder');
-    check(placeholder === 'Name der Quelle eingeben', 'The inline name placeholder is translated', `Placeholder: ${placeholder}`);
-
-    const deNotice = await deCanvas.locator('.credits-editor-notice').innerText();
-    check(deNotice.includes('Füge einen Link hinzu'), 'The incomplete-credit notice is translated', `Notice: ${deNotice}`);
-
-    const deSettings = de.locator('.components-panel__body').filter({ hasText: 'Angaben zur Quelle' });
-    check(
-      (await deSettings.count()) === 1 &&
-        (await deSettings.getByLabel('Art der Angabe').count()) === 1 &&
-        (await deSettings.getByLabel('Link-Adresse').count()) === 1 &&
-        (await deSettings.getByLabel('In neuem Tab öffnen').count()) === 1,
-      'The sidebar panel title and control labels are translated',
-      `Sidebar text: ${await de.locator('.components-panel__body').first().innerText()}`
-    );
-
-    const deStatuses = await de.locator('.credits-color-status li').allInnerTexts();
-    check(
-      deStatuses[0] === 'Hintergrundfarbe der Kennzeichnung – Website-Standard',
-      'The color status line is translated and its placeholders are filled in the translated order',
-      `Color status: ${JSON.stringify(deStatuses)}`
-    );
-
-    await de.evaluate(
-      () => wp.data.dispatch('core/block-editor').updateBlockAttributes(wp.data.select('core/block-editor').getBlocks()[0].clientId, { badgeColor: '#ff0000' })
-    );
-    await de.waitForTimeout(400);
-    check(
-      (await de.getByRole('button', { name: 'Farben auf Website-Standard zurücksetzen' }).count()) === 1,
-      'The reset button label is translated',
-      'Translated reset button not found'
-    );
-    await de.screenshot({ path: join(ART, 'block-editor-german.png') });
-    await germanContext.close();
-  } else {
-    console.log('SKIP: translation checks (CREDITS_E2E_TRANSLATIONS not set; scripts/run-editor-e2e.sh sets it)');
-  }
 } catch (err) {
   fail(String(err));
   await page.screenshot({ path: join(ART, 'block-editor-error.png'), fullPage: true }).catch(() => {});

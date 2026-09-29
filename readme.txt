@@ -106,7 +106,7 @@ No. Credit links open in a new tab with `noopener noreferrer` by default; turn o
 
 = Does it work with the Classic Editor? =
 
-Yes. When the Classic Editor is active, an Add Credits toolbar button opens a form for the type, name, link, and link opening, and inserts the shortcode for you.
+Yes. When the Classic Editor is active, an Add Credits toolbar button opens a form for the type, name, and link, and inserts the shortcode for you.
 
 == Screenshots ==
 

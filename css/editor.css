@@ -66,20 +66,9 @@
 	box-shadow: 0 0 0 1px #b32d2e;
 }
 
-/* Sidebar (color panel): where each color comes from. Lives in the editor page, not the canvas. */
-.credits-color-help,
-.credits-color-status {
+/* Sidebar (color panel) hint. Lives in the editor page, not the canvas. */
+.credits-color-help {
 	color: #757575;
 	font-size: 12px;
-	line-height: 1.5;
 	margin: 0 0 8px;
-}
-
-.credits-color-status {
-	list-style: none;
-	padding: 0;
-}
-
-.credits-color-status li {
-	margin: 0 0 2px;
 }

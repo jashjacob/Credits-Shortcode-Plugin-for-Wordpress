@@ -13,7 +13,6 @@
     var ToggleControl = wp.components.ToggleControl;
     var Button = wp.components.Button;
     var __ = (wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__ : function (text) { return text; };
-    var sprintf = (wp.i18n && typeof wp.i18n.sprintf === 'function') ? wp.i18n.sprintf : function (format, value) { return String(format).replace('%s', value); };
     var savedSettings = (window.creditsShortcodeSettings && typeof window.creditsShortcodeSettings === 'object') ? window.creditsShortcodeSettings : {};
 
     // Every translatable string passes the text domain as a literal, which is what
@@ -175,21 +174,6 @@
             var linkStyle = linkBg ? { backgroundColor: linkBg } : null;
             var linkTextStyle = linkTextClr ? { color: linkTextClr } : null;
 
-            // Sidebar swatch labels are truncated, so where each color comes from is spelled out below them.
-            var colorStatus = function (label, override, siteValue) {
-                var source = override
-                    ? __('Custom for this credit', 'credits-shortcode')
-                    : (siteValue ? __('Site default', 'credits-shortcode') : __('Plugin default', 'credits-shortcode'));
-                /* translators: 1: name of a color setting, for example "Badge Background Color". 2: where that color comes from, for example "Site default". */
-                return sprintf(__('%1$s: %2$s', 'credits-shortcode'), label, source);
-            };
-
-            var colorLabels = {
-                badge: __('Badge Background Color', 'credits-shortcode'),
-                link: __('Link Background Color', 'credits-shortcode'),
-                text: __('Link Text Color', 'credits-shortcode')
-            };
-
             var inspectorChildren = [
                 el(
                     PanelBody,
@@ -260,31 +244,24 @@
                                     onChange: function (newColor) {
                                         setAttributes({ badgeColor: hexColor(newColor) });
                                     },
-                                    label: colorLabels.badge
+                                    label: __('Badge Background Color', 'credits-shortcode')
                                 },
                                 {
                                     value: linkBg,
                                     onChange: function (newColor) {
                                         setAttributes({ linkColor: hexColor(newColor) });
                                     },
-                                    label: colorLabels.link
+                                    label: __('Link Background Color', 'credits-shortcode')
                                 },
                                 {
                                     value: linkTextClr,
                                     onChange: function (newColor) {
                                         setAttributes({ linkTextColor: hexColor(newColor) });
                                     },
-                                    label: colorLabels.text
+                                    label: __('Link Text Color', 'credits-shortcode')
                                 }
                             ]
                         },
-                        el(
-                            'ul',
-                            { className: 'credits-color-status' },
-                            el('li', null, colorStatus(colorLabels.badge, overrides.badge, siteColors.badge)),
-                            el('li', null, colorStatus(colorLabels.link, overrides.link, siteColors.link)),
-                            el('li', null, colorStatus(colorLabels.text, overrides.text, siteColors.text))
-                        ),
                         el(
                             'p',
                             { className: 'credits-color-help' },

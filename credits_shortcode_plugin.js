@@ -64,9 +64,6 @@
         if (values.type === 'source' || values.type === 'via') {
             attributes.push('type="' + values.type + '"');
         }
-        if (values.newTab === false) {
-            attributes.push('newtab="false"');
-        }
         return '[credits ' + attributes.join(' ') + ']' + sanitizeNameForShortcode(values.name) + '[/credits]';
     };
 
@@ -79,17 +76,10 @@
             };
 
             var validate = function (values) {
-                var name = cleanName(values.name);
                 var link = stripControlChars(values.link).trim();
 
-                if (!name && !link) {
+                if (!cleanName(values.name) || !link) {
                     return translate('Enter a name and a link.');
-                }
-                if (!name) {
-                    return translate('Enter a name.');
-                }
-                if (!link) {
-                    return translate('Enter a link.');
                 }
                 if (!hasAllowedScheme(link)) {
                     return translate('Use a link that starts with http://, https://, mailto: or ftp://, or a relative address.');
@@ -133,17 +123,7 @@
                             label: translate('Link URL'),
                             value: '',
                             placeholder: 'https://example.com'
-                        },
-                        {
-                            type: 'checkbox',
-                            name: 'newTab',
-                            text: translate('Open in new tab'),
-                            checked: true
                         }
-                    ],
-                    buttons: [
-                        { text: translate('Insert credit'), subtype: 'primary', onclick: 'submit' },
-                        { text: translate('Cancel'), onclick: 'close' }
                     ],
                     onsubmit: function (e) {
                         var values = e.data;

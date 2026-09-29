@@ -26,9 +26,8 @@ Supports the modern **Gutenberg Block Editor** (with live preview, customizable 
 
 ## 🚀 Features
 
-- 🧩 **Gutenberg Block Editor**: Add credits using a native WordPress block (`/credits`). Type the name and paste the link right in the block, with a live preview and sidebar controls for appearance.
-- ✅ **Clear Feedback for Unfinished Credits**: A credit with no name, no link, or an unusable link is outlined and explained in the editor, so it never looks finished by accident.
-- 🔗 **Link Opening Control**: Credits open in a new tab by default (with `noopener noreferrer`); switch **Open in new tab** off for a plain same-tab link.
+- 🧩 **Gutenberg Block Editor**: Add credits using a native WordPress block (`/credits`). Type the name and link right in the block, with a live preview and sidebar controls. Unfinished credits are flagged in the editor only.
+- 🔗 **Link Opening Control**: Credits open in a new tab by default (with `noopener noreferrer`); turn off **Open in new tab** for a same-tab link.
 - 🎨 **Custom Accent Colors**: Pick custom badge background, link background, and link text colors directly from the Block Editor sidebar or shortcode parameters.
 - ↕️ **Spacing Presets**: Keep consecutive credits compact, standard, or spacious with a site-wide default and per-credit overrides.
 - ✨ **Micro-Interaction Hover Effects**: Smooth 0.2s CSS transitions with subtle hover elevation and brightness shifts.
@@ -44,14 +43,13 @@ Supports the modern **Gutenberg Block Editor** (with live preview, customizable 
 ### Option 1: Gutenberg Block Editor (Recommended)
 
 1. Open any post or page in the WordPress Block Editor.
-2. Click **`+`** or type `/credits` to insert the **Credits Link** block. The cursor lands in the name.
-3. Type the credit name (e.g., *TechZei*) directly in the block, then enter the **Link URL** (e.g., `https://techzei.com`) in the field beneath it. Until both are filled in, the block is outlined with a note saying what is missing; that note appears in the editor only.
-4. Use the block sidebar (Inspector Controls) for everything else:
-   - **Credit Type**: `Use site default`, `Source`, or `Via`. Choose `Use site default` to clear an override.
-   - **Source / Via Name** and **Link URL**: the same values as the inline fields.
-   - **Open in new tab**: on by default; turn it off to open the link in the same tab.
-   - **Spacing**: `Use site default`, Compact, Standard, or Spacious.
-5. Expand **Accent Color Settings** to customize the **Badge Background Color**, **Link Background Color**, and **Link Text Color**. Below the swatches, each color is labelled **Custom for this credit**, **Site default** (from **Settings → Credits**), or **Plugin default** (neutral styling), and **Reset colors to site default** clears this credit's overrides.
+2. Click **`+`** or type `/credits` to insert the **Credits Link** block.
+3. Type the credit name (e.g., *TechZei*) in the block and enter the **Link URL** (e.g., `https://techzei.com`) in the field beneath it. The block is outlined, with a note, until both are filled in (the note appears in the editor only).
+4. Use the block sidebar (Inspector Controls) for the rest:
+   - **Credit Type**: `Use site default`, `Source`, or `Via`.
+   - **Open in new tab**: on by default.
+   - **Accent Color Settings**: badge background, link background, and link text colors. Colors you leave unchanged follow **Settings → Credits**; **Reset colors to site default** clears this credit's overrides.
+5. Choose a **Spacing** preset—Use site default, Compact, Standard, or Spacious—for this credit.
 
 ---
 
@@ -74,7 +72,7 @@ Insert shortcodes directly in paragraph blocks, shortcode blocks, or text widget
 [credits link="https://example.com" type="source" badge_color="#0073aa" link_color="#f0f0f0" link_text_color="#0073aa"]Source Name[/credits]
 ```
 
-Credits open in a new tab. To open in the same tab instead, add `newtab="false"` (`new_tab="false"` also works; WordPress lowercases shortcode attribute names, so `newTab` is only for the block):
+Credits open in a new tab. Add `newtab="false"` (or `new_tab="false"`) to open in the same tab. WordPress lowercases shortcode attribute names, so `newTab` is for the block only:
 
 ```text
 [credits link="https://example.com" newtab="false"]Source Name[/credits]
@@ -92,10 +90,7 @@ To control the gap when several credits are stacked, add `spacing="compact"`, `s
 
 If you use the Classic Editor plugin:
 1. Optionally select the text you want to credit, then click the **Credits Logo** button in the TinyMCE toolbar.
-2. Fill in the one form that opens: **Credit Type** (`Use site default`, `Source`, or `Via`), **Name** (prefilled from your selection), **Link URL**, and **Open in new tab**. Press **Enter** to insert or **Esc** to cancel.
-3. A missing name or link, or a link that does not start with `http://`, `https://`, `mailto:` or `ftp://` (relative addresses are fine), is explained and keeps the form open.
-
-The button inserts a `[credits]` shortcode. Characters that could break out of the shortcode are encoded or removed, so what you type cannot change the shortcode's structure.
+2. Fill in the form: **Credit Type**, **Name** (prefilled from your selection), and **Link URL**, then press **OK** (or **Enter**). A missing name or link, or a link that does not start with `http://`, `https://`, `mailto:` or `ftp://` (relative addresses are fine), keeps the form open with a message.
 
 ---
 
@@ -149,7 +144,7 @@ Copy or symlink the directory into your site's `/wp-content/plugins/` and activa
 
 ### Local CI (runs before every push)
 
-CI runs on your machine, not on GitHub Actions. One command runs the fast tier: PHP lint, the PHPUnit suite, a JavaScript syntax check, and the WordPress.org release zip check.
+CI runs on your machine, not on GitHub Actions. One command runs the fast tier: PHP lint, the PHPUnit suite, a JavaScript syntax check, the Node tests for the Classic Editor form (`node --test tests/js/*.test.js`, no npm packages), and the WordPress.org release zip check.
 
 ```bash
 composer install
@@ -158,8 +153,6 @@ composer setup-hooks # once: run the fast tier automatically on every git push
 ```
 
 Skip the hook for a single push with `git push --no-verify`.
-
-The fast tier also runs the Node tests for the Classic Editor dialog (`node --test tests/js/*.test.js`; tested on Node 22, no npm packages or build step).
 
 It tests only the PHP version installed on your machine. The plugin declares **PHP 7.4+**, so avoid syntax or functions newer than that.
 
@@ -170,13 +163,11 @@ composer ci:integration                       # latest WordPress release
 WP_VERSION=6.3 composer ci:integration        # any release; 6.3 is the plugin's minimum
 ```
 
-To also drive the real editors, add the Playwright tests. They use the same SQLite WordPress, so they need no MySQL either; the first run downloads Playwright and Chromium (set `CREDITS_E2E_CHROMIUM=/path/to/chrome` to use a browser you already have):
+To also drive the real block editor (insert a credit, edit its name, URL, type, spacing and custom class, save, reload, and check the published page), add the Playwright test. It uses the same SQLite WordPress, so it needs no MySQL either; the first run downloads Playwright and Chromium:
 
 ```bash
 composer ci:e2e
 ```
-
-They cover the block editor (inline name and link editing, incomplete-credit feedback, colors and reset, link opening, saving, reloading and the published page) and the Classic Editor form (validation, safe insertion and the published result). Both also check that translations load, using a small German test fixture in `tests/fixtures/i18n/`. As with the integration tier, `WP_VERSION=6.3 composer ci:e2e` runs them against another release. WP-CLI refuses to run as root; in a container, set `WP_CLI_ALLOW_ROOT=1`.
 
 The fast suite (`tests/`) uses WordPress stubs and stays instant. The integration suite (`tests/integration/`) exercises real block registration, script localization, `do_shortcode()`, `do_blocks()`, saving and reloading posts (including roles filtered by kses), settings sanitization, and uninstall. Installs live in `.wordpress-integration/<version>/`; delete that folder to start over.
 
@@ -209,7 +200,7 @@ Regenerate the POT file after changing translatable strings:
 bash scripts/generate-pot.sh
 ```
 
-Pass the text domain as a literal string (`__( 'Text', 'credits-shortcode' )`) everywhere, including the block editor script: the extractor skips strings whose domain is a variable, and a test fails if one is missed. Classic Editor dialog strings live in `tinymce-i18n.php`, because TinyMCE cannot read the block editor's translation data.
+Always pass the text domain as a literal (`__( 'Text', 'credits-shortcode' )`), including in the block editor script: the extractor skips strings whose domain is a variable, and a test fails if one slips in. Classic Editor form strings live in `tinymce-i18n.php` because TinyMCE cannot read the block editor's translation data.
 
 ---
 
@@ -222,12 +213,11 @@ The plugin is translation-ready via the `credits-shortcode` text domain. If you'
 ## 📜 Changelog
 
 ### Unreleased
-- Block: edit the credit name and link inline, with a placeholder and an editor-only outline and note for credits that are missing a name, a link, or a usable link.
-- Block: the color panel shows whether each color is custom, the site default, or the plugin default, and offers **Reset colors to site default**.
-- Added an **Open in new tab** option to the block (`newTab`) and shortcode (`newtab` / `new_tab`). Credits without it keep opening in a new tab.
-- Classic Editor: one form for type, name, link and new-tab instead of a chain of browser prompts, with validation and safer shortcode insertion (a link like `?a=1&copy=2` is no longer corrupted).
-- The block's `link` attribute now defaults to an empty string instead of `#`. Published output is unchanged: both render as `#`.
-- Block editor strings can now be translated (they were missing from the translation template), and Classic Editor strings are translated too.
+- Block: edit the credit name and link inline; credits missing a name, a link, or a usable link are flagged in the editor only. Added **Reset colors to site default**.
+- Added an **Open in new tab** option to the block (`newTab`) and shortcode (`newtab` / `new_tab`); credits without it still open in a new tab.
+- Classic Editor: one form instead of browser prompts, with validation and safer shortcode insertion (a link like `?a=1&copy=2` is no longer corrupted).
+- The block's `link` attribute now defaults to an empty string instead of `#`; published output is unchanged.
+- Block editor strings are now in the translation template (they were missing), and Classic Editor strings are translated.
 
 ### Version 1.6.1
 - Fixed the Gutenberg block dropping a custom CSS class added in the editor's Advanced panel from the published output.
