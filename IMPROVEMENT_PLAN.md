@@ -27,12 +27,12 @@ The initial review was completed on September 18, 2026 against version 1.5.0. Th
 
 2. **Add tests that run against actual WordPress.**
 
-   - [ ] Keep the fast unit suite and add a separate WordPress integration suite.
-   - [ ] Exercise real script localization, block registration, `do_shortcode()`, and `render_block()` rather than only direct calls to the renderer.
-   - [ ] Cover site defaults, explicit overrides, custom classes, and representative unsafe URL, text, and color inputs using WordPress's own sanitizers.
+   - [x] Keep the fast unit suite and add a separate WordPress integration suite. `tests/integration/` with `phpunit-integration.xml.dist`; it runs against a disposable SQLite-backed WordPress from `scripts/setup-wordpress-integration.sh`, so no MySQL or Docker is needed.
+   - [x] Exercise real script localization, block registration, `do_shortcode()`, and `render_block()` rather than only direct calls to the renderer.
+   - [x] Cover site defaults, explicit overrides, custom classes, and representative unsafe URL, text, and color inputs using WordPress's own sanitizers. Also covers saving and reloading posts for administrator, editor, author, and contributor roles, settings sanitization, and uninstall.
    - [ ] Add an editor smoke test: insert a credit, edit its values, save, reload, and verify the published output.
-   - [ ] Test representative older and current supported WordPress versions using compatible PHP versions. Add PHP 8.5 to CI after confirming dependency compatibility.
-   - [ ] Document how contributors run both suites and the editor check.
+   - [x] Test representative older and current supported WordPress versions using compatible PHP versions. `WP_VERSION=6.3` and the latest release both pass on PHP 8.5, which is also the local PHP; a hosted matrix is no longer run (see the note below).
+   - [x] Document how contributors run both suites and the editor check. See the README's Development section.
 
    Acceptance: the integration suite detects the API version issue from step 1 when that fix is reverted. Saving and reloading a block retains its name, URL, type, colors, spacing, and custom class.
 

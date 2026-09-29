@@ -1,19 +1,24 @@
 #!/usr/bin/env bash
 # Local CI. Fast tier (default): lint, PHPUnit, JS syntax, release zip.
-# --full adds the WordPress smoke test and block-editor e2e (needs MySQL).
+# --integration adds the PHPUnit suite against a real WordPress (SQLite, no MySQL).
+# --full adds that plus the WordPress smoke test and block-editor e2e (needs MySQL).
+# Pick the integration WordPress with WP_VERSION (default: latest release).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 FULL=0
+INTEGRATION=0
 for arg in "$@"; do
 	case "$arg" in
-		--full) FULL=1 ;;
+		--integration) INTEGRATION=1 ;;
+		--full) FULL=1; INTEGRATION=1 ;;
 		-h|--help)
-			echo "Usage: scripts/ci-local.sh [--full]"
-			echo "  (default)  PHP lint, PHPUnit, JS syntax check, release zip check"
-			echo "  --full     also WordPress smoke test + block-editor e2e (MySQL required)"
+			echo "Usage: scripts/ci-local.sh [--integration] [--full]"
+			echo "  (default)      PHP lint, PHPUnit, JS syntax check, release zip check"
+			echo "  --integration  also PHPUnit against a real WordPress (SQLite; WP_VERSION=x.y to pick one)"
+			echo "  --full         also the WordPress smoke test + block-editor e2e (MySQL required)"
 			exit 0
 			;;
 		*)
@@ -39,7 +44,7 @@ while IFS= read -r -d '' file; do
 		echo "Lint failed: $file" >&2
 		exit 1
 	fi
-done < <(find . -name '*.php' -not -path './vendor/*' -not -path './.wordpress/*' -not -path '*/node_modules/*' -print0)
+done < <(find . -name '*.php' -not -path './vendor/*' -not -path './.wordpress/*' -not -path './.wordpress-integration/*' -not -path '*/node_modules/*' -print0)
 echo "OK"
 
 step "JavaScript syntax"
@@ -59,6 +64,14 @@ step "WordPress.org release zip"
 bash scripts/build-wp-release.sh >/dev/null
 rm -f "$ROOT"/credits-shortcode-release.zip
 echo "OK"
+
+if [ "$INTEGRATION" -eq 1 ]; then
+	step "Integration WordPress setup"
+	bash scripts/setup-wordpress-integration.sh
+
+	step "PHPUnit integration (real WordPress)"
+	vendor/bin/phpunit -c phpunit-integration.xml.dist
+fi
 
 if [ "$FULL" -eq 1 ]; then
 	export WP_DB_HOST="${WP_DB_HOST:-127.0.0.1}"

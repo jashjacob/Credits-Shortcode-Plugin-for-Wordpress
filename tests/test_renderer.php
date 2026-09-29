@@ -294,6 +294,15 @@ final class RendererTest extends TestCase {
 		$this->assertStringNotContainsString( 'leaked-block-class', $out );
 	}
 
+	public function test_registered_shortcode_callback_ignores_the_tag_argument_wordpress_passes(): void {
+		// do_shortcode() calls the callback as ( $atts, $content, $tag ).
+		$callback = $GLOBALS['credits_test_registered_shortcodes']['credits'];
+		$out      = call_user_func( $callback, array( 'name' => 'x' ), null, 'credits' );
+
+		$this->assertSame( $this->render( array( 'name' => 'x' ) ), $out );
+		$this->assertMatchesRegularExpression( '/<ul class="credits wp-block-credits-shortcode credits-spacing-standard">/', $out );
+	}
+
 	public function test_block_render_without_custom_class_matches_shortcode_output(): void {
 		$GLOBALS['credits_test_block_wrapper_attributes'] = 'class="wp-block-credits-shortcode"';
 		$block_out    = credits_render_block( array( 'name' => 'x', 'link' => 'https://example.com/' ) );

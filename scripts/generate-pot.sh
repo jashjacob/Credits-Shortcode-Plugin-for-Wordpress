@@ -18,7 +18,7 @@ mkdir -p "$ROOT/languages"
 
 wp i18n make-pot "$ROOT" "$ROOT/languages/credits-shortcode.pot" \
 	--domain=credits-shortcode \
-	--exclude=vendor,tests,.wordpress,.cursor,node_modules \
+	--exclude=vendor,tests,.wordpress,.wordpress-integration,.cursor,node_modules \
 	--headers='{"Report-Msgid-Bugs-To":"https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress/issues"}'
 
 echo "Wrote languages/credits-shortcode.pot"

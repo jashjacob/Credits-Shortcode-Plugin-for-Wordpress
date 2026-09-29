@@ -7,3 +7,5 @@ vendor/
 credits-shortcode-release.zip
 .DS_Store
 
+
+.wordpress-integration/
