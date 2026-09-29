@@ -28,7 +28,7 @@ final class SettingsTest extends TestCase {
 			)
 		);
 
-		$out = $this->render( array( 'name' => 'x' ) );
+		$out = $this->render( array( 'name' => 'x', 'link' => 'https://example.com/' ) );
 
 		$this->assertMatchesRegularExpression( '/background-color:\s*#112233/', $out );
 		$this->assertMatchesRegularExpression( '/background-color:\s*#445566/', $out );

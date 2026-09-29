@@ -64,12 +64,86 @@ final class RendererTest extends TestCase {
 		$this->assertArrayHasKey( 'credits', $GLOBALS['credits_test_registered_shortcodes'] );
 	}
 
-	public function test_empty_and_no_attrs_render_fallback_name_with_hash_link(): void {
-		foreach ( array( array(), array( 'name' => '', 'link' => '' ), array( 'name' => null, 'link' => null ) ) as $atts ) {
-			$out = $this->render( $atts );
-			$this->assertStringContainsString( '>Credit Link</a>', $out, 'Fallback name expected for: ' . var_export( $atts, true ) );
-			$this->assertStringContainsString( 'href="#"', $out, 'Fallback link "#" expected' );
+	/* ---------------------------------------------------------------------
+	 * Incomplete credits: no dead links, no placeholder credit
+	 * ------------------------------------------------------------------ */
+
+	public function test_no_name_and_no_usable_link_renders_nothing(): void {
+		foreach (
+			array(
+				array(),
+				array( 'name' => '', 'link' => '' ),
+				array( 'name' => null, 'link' => null ),
+				array( 'name' => '   ' ),
+				array( 'name' => '   ', 'link' => '#' ),
+				array( 'name' => '', 'link' => 'javascript:alert(1)' ),
+				array( 'name' => '<script>alert(1)</script>' ),
+				array( 'name' => '<img src=x onerror=alert(1)>', 'link' => '   ' ),
+				array( 'name' => array( 'deep' => 'array' ), 'link' => new stdClass() ),
+			) as $atts
+		) {
+			$this->assertSame( '', $this->render( $atts ), 'Nothing expected for: ' . var_export( $atts, true ) );
 		}
+	}
+
+	public function test_name_without_a_usable_link_renders_the_chip_without_an_anchor(): void {
+		$expected = '<ul class="credits wp-block-credits-shortcode credits-spacing-standard"><li class="credits">'
+			. '<span class="cre_cate">Source</span>'
+			. '<span class="cre_cate_link"><span class="cre_cate_text">Example</span></span>'
+			. '</li></ul>';
+
+		foreach ( array( null, '', '   ', '#', 'javascript:alert(1)', 'vbscript:msgbox(1)' ) as $link ) {
+			$atts = array( 'name' => 'Example' );
+			if ( null !== $link ) {
+				$atts['link'] = $link;
+			}
+			$this->assertSame( $expected, $this->render( $atts ), 'Link: ' . var_export( $link, true ) );
+		}
+	}
+
+	public function test_unlinked_credit_has_no_anchor_href_or_target_even_when_new_tab_is_requested(): void {
+		$out = $this->html( array( 'name' => 'Example', 'link' => '#', 'newTab' => true ) );
+		$this->assertStringNotContainsString( '<a ', $out );
+		$this->assertStringNotContainsString( 'href', $out );
+		$this->assertStringNotContainsString( 'target=', $out );
+		$this->assertStringNotContainsString( 'rel=', $out );
+	}
+
+	public function test_link_text_color_goes_on_the_text_span_of_an_unlinked_credit(): void {
+		$out = $this->html( array( 'name' => 'Example', 'linkColor' => '#222222', 'linkTextColor' => '#00ff00' ) );
+		$this->assertStringContainsString( '<span class="cre_cate_link" style="background-color: #222222"><span class="cre_cate_text" style="color: #00ff00">Example</span></span>', $out );
+
+		$out = $this->html( array( 'name' => 'Example' ) );
+		$this->assertStringContainsString( '<span class="cre_cate_text">Example</span>', $out, 'No color, no style attribute' );
+	}
+
+	public function test_site_default_link_text_color_applies_to_an_unlinked_credit(): void {
+		update_option( 'credits_shortcode_settings', array( 'link_text_color' => '#778899' ) );
+
+		$out = $this->html( array( 'name' => 'Example' ) );
+		$this->assertStringContainsString( '<span class="cre_cate_text" style="color: #778899">Example</span>', $out );
+	}
+
+	public function test_fragment_links_are_usable_links(): void {
+		$out = $this->html( array( 'name' => 'Example', 'link' => '#references' ) );
+		$this->assertStringContainsString( '<a href="#references"', $out );
+		$this->assertStringContainsString( '>Example</a>', $out );
+		$this->assertStringNotContainsString( 'cre_cate_text', $out );
+	}
+
+	public function test_blank_name_with_a_usable_link_keeps_the_credit_link_fallback_text(): void {
+		foreach ( array( array( 'name' => '' ), array( 'name' => '   ' ), array() ) as $extra ) {
+			$out = $this->html( array_merge( $extra, array( 'link' => 'https://example.com/source' ) ) );
+			$this->assertStringContainsString( '<a href="https://example.com/source"', $out );
+			$this->assertStringContainsString( '>Credit Link</a>', $out );
+		}
+	}
+
+	public function test_untouched_block_renders_nothing(): void {
+		$GLOBALS['credits_test_block_wrapper_attributes'] = 'class="wp-block-credits-shortcode my-custom-class"';
+
+		$this->assertSame( '', credits_render_block( array() ) );
+		$this->assertSame( '', credits_render_block( array( 'className' => 'my-custom-class', 'type' => 'via', 'badgeColor' => '#111111' ) ) );
 	}
 
 	public function test_output_is_a_string_starting_with_allowed_ul_li_markup(): void {
@@ -83,13 +157,20 @@ final class RendererTest extends TestCase {
 	 * ------------------------------------------------------------------ */
 
 	public function test_script_tag_in_name_does_not_survive(): void {
-		$out = $this->html( array( 'name' => '<script>alert(1)</script>' ) );
+		// The name sanitizes to nothing: with no usable link there is nothing to render.
+		$this->assertSame( '', $this->html( array( 'name' => '<script>alert(1)</script>' ) ) );
+
+		$out = $this->html( array( 'name' => '<script>alert(1)</script>', 'link' => 'https://example.com/' ) );
 		$this->assertStringNotContainsStringIgnoringCase( '<script', $out, 'No script element may survive' );
+		$this->assertStringNotContainsString( 'alert(1)', $out );
+		$this->assertStringContainsString( '>Credit Link</a>', $out );
 		$this->assertNoEventHandlerAttribute( $out );
 	}
 
 	public function test_img_onerror_in_name_does_not_survive(): void {
-		$out = $this->html( array( 'name' => '<img src=x onerror=alert(1)>' ) );
+		$this->assertSame( '', $this->html( array( 'name' => '<img src=x onerror=alert(1)>' ) ) );
+
+		$out = $this->html( array( 'name' => '<img src=x onerror=alert(1)>', 'link' => 'https://example.com/' ) );
 		$this->assertStringNotContainsStringIgnoringCase( '<img', $out );
 		$this->assertStringNotContainsStringIgnoringCase( 'onerror', $out );
 		$this->assertStringNotContainsStringIgnoringCase( '<svg', $out );
@@ -102,10 +183,13 @@ final class RendererTest extends TestCase {
 			'"><img src=x onerror=alert(1)>',
 		);
 		foreach ( $payloads as $payload ) {
-			$out = $this->html( array( 'name' => $payload ) );
-			$this->assertStringNotContainsStringIgnoringCase( '<svg', $out );
-			$this->assertStringNotContainsStringIgnoringCase( '<img', $out );
-			$this->assertNoEventHandlerAttribute( $out );
+			// Once without a link (unlinked chip, or nothing) and once with one (anchor).
+			foreach ( array( array(), array( 'link' => 'https://example.com/' ) ) as $extra ) {
+				$out = $this->html( array_merge( array( 'name' => $payload ), $extra ) );
+				$this->assertStringNotContainsStringIgnoringCase( '<svg', $out );
+				$this->assertStringNotContainsStringIgnoringCase( '<img', $out );
+				$this->assertNoEventHandlerAttribute( $out );
+			}
 		}
 	}
 
@@ -120,22 +204,32 @@ final class RendererTest extends TestCase {
 	 * XSS via link attributes / scheme smuggling
 	 * ------------------------------------------------------------------ */
 
-	public function test_javascript_scheme_link_falls_back_to_hash(): void {
+	public function test_javascript_scheme_link_renders_the_name_without_an_anchor(): void {
 		$out = $this->html( array( 'name' => 'ok', 'link' => 'javascript:alert(1)' ) );
-		$this->assertStringContainsString( 'href="#"', $out );
+		$this->assertStringNotContainsString( '<a ', $out );
+		$this->assertStringNotContainsString( 'href', $out );
+		$this->assertStringContainsString( '<span class="cre_cate_text">ok</span>', $out );
 		$this->assertStringNotContainsStringIgnoringCase( 'javascript:', $out );
 	}
 
-	public function test_data_text_html_uri_falls_back_to_hash(): void {
+	public function test_data_text_html_uri_renders_the_name_without_an_anchor(): void {
 		$out = $this->html( array( 'name' => 'ok', 'link' => 'data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==' ) );
-		$this->assertStringContainsString( 'href="#"', $out );
+		$this->assertStringNotContainsString( '<a ', $out );
+		$this->assertStringNotContainsString( 'href', $out );
+		$this->assertStringContainsString( '<span class="cre_cate_text">ok</span>', $out );
 		$this->assertStringNotContainsStringIgnoringCase( 'data:', $out );
 	}
 
 	public function test_vbscript_and_encoded_javascript_schemes_rejected(): void {
 		foreach ( array( 'vbscript:msgbox(1)', '&#106;avascript:alert(1)', 'JaVaScRiPt:alert(1)', 'jav&#x09;ascript:alert(1)' ) as $bad ) {
 			$out = $this->html( array( 'name' => 'ok', 'link' => $bad ) );
-			$this->assertStringContainsString( 'href="#"', $out, "Payload must not survive: {$bad}" );
+			$this->assertStringNotContainsString( '<a ', $out, "Payload must not survive: {$bad}" );
+			$this->assertStringNotContainsString( 'href', $out, "Payload must not survive: {$bad}" );
+			$this->assertStringNotContainsStringIgnoringCase( 'script:', $out, "Payload must not survive: {$bad}" );
+			$this->assertStringContainsString( '<span class="cre_cate_text">ok</span>', $out, "Payload must not survive: {$bad}" );
+
+			// With no name either, the credit disappears entirely.
+			$this->assertSame( '', $this->html( array( 'link' => $bad ) ), "Payload must not survive: {$bad}" );
 		}
 	}
 
@@ -226,7 +320,7 @@ final class RendererTest extends TestCase {
 	}
 
 	public function test_valid_hex_link_text_color_applied_as_color(): void {
-		$out = $this->html( array( 'name' => 'x', 'linkTextColor' => '#00ff00' ) );
+		$out = $this->html( array( 'name' => 'x', 'link' => 'https://example.com/', 'linkTextColor' => '#00ff00' ) );
 		$this->assertMatchesRegularExpression( '/<a [^>]*style="[^"]*color:\s*#00ff00/', $out );
 	}
 
@@ -244,15 +338,16 @@ final class RendererTest extends TestCase {
 	}
 
 	public function test_four_digit_hex_rejected_but_three_digit_hex_accepted(): void {
-		$out = $this->html( array( 'badgeColor' => '#abcd' ) );
+		$out = $this->html( array( 'name' => 'x', 'badgeColor' => '#abcd' ) );
+		$this->assertStringContainsString( 'cre_cate', $out, 'The credit itself still renders' );
 		$this->assertStringNotContainsString( 'style=', $out );
 
-		$out = $this->html( array( 'badgeColor' => '#abc' ) );
+		$out = $this->html( array( 'name' => 'x', 'badgeColor' => '#abc' ) );
 		$this->assertMatchesRegularExpression( '/background-color:\s*#abc/', $out );
 	}
 
 	public function test_snake_case_color_aliases_still_work(): void {
-		$out = $this->html( array( 'badge_color' => '#112233', 'link_color' => '#445566', 'link_text_color' => '#778899' ) );
+		$out = $this->html( array( 'name' => 'x', 'badge_color' => '#112233', 'link_color' => '#445566', 'link_text_color' => '#778899' ) );
 		$this->assertMatchesRegularExpression( '/background-color:\s*#112233/', $out );
 		$this->assertMatchesRegularExpression( '/color:\s*#778899/', $out );
 	}
@@ -264,6 +359,7 @@ final class RendererTest extends TestCase {
 	public function test_unknown_attributes_are_ignored(): void {
 		$out = $this->render( array(
 			'name'      => 'Known',
+			'link'      => 'https://example.com/',
 			'evil_attr' => '"><script>alert(1)</script>',
 			'onmouseover' => 'alert(1)',
 		) );
@@ -283,9 +379,15 @@ final class RendererTest extends TestCase {
 	}
 
 	public function test_non_scalar_att_values_do_not_fatal(): void {
+		// A non-scalar name and link are treated as absent, so nothing renders.
 		$out = $this->render( array( 'name' => array( 'deep' => 'array' ), 'link' => new stdClass(), 'badgeColor' => 1.5 ) );
-		$this->assertIsString( $out );
-		$this->assertStringContainsString( 'Credit Link', $out );
+		$this->assertSame( '', $out );
+
+		$out = $this->render( array( 'name' => array( 'deep' => 'array' ), 'link' => 'https://example.com/', 'badgeColor' => 1.5 ) );
+		$this->assertStringContainsString( '>Credit Link</a>', $out );
+
+		$out = $this->render( array( 'name' => 'Named', 'link' => new stdClass(), 'badgeColor' => 1.5 ) );
+		$this->assertStringContainsString( '<span class="cre_cate_text">Named</span>', $out );
 	}
 
 	/* ---------------------------------------------------------------------

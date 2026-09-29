@@ -5,23 +5,37 @@
 
 final class RenderingTest extends Credits_Integration_TestCase {
 
-	/** Attribute payloads that must never produce executable markup. */
+	/**
+	 * Attribute payloads that must never produce executable markup, and whether the
+	 * credit is expected to disappear entirely (a name that sanitizes to nothing and
+	 * no usable link renders no markup at all).
+	 */
 	public function hostile_attribute_provider(): array {
 		return array(
-			'javascript link'        => array( array( 'name' => 'x', 'link' => 'javascript:alert(1)' ) ),
-			'entity encoded scheme'  => array( array( 'name' => 'x', 'link' => '&#106;avascript:alert(1)' ) ),
-			'data uri'               => array( array( 'name' => 'x', 'link' => 'data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==' ) ),
-			'quote breakout link'    => array( array( 'name' => 'x', 'link' => '" onmouseover="alert(1)' ) ),
-			'script in name'         => array( array( 'name' => '<script>alert(1)</script>' ) ),
-			'img onerror in name'    => array( array( 'name' => '<img src=x onerror=alert(1)>' ) ),
-			'quote breakout name'    => array( array( 'name' => '"><svg onload=alert(1)>' ) ),
-			'css injection colors'   => array( array( 'name' => 'x', 'badgeColor' => 'red;background:url(javascript:alert(1))', 'linkColor' => '#fff;position:fixed', 'linkTextColor' => 'expression(alert(1))' ) ),
-			'quote breakout class'   => array( array( 'name' => 'x', 'className' => 'ok" onmouseover="alert(1)' ) ),
-			'tag breakout in class'  => array( array( 'name' => 'x', 'className' => '"><script>alert(1)</script>' ) ),
+			'javascript link'        => array( array( 'name' => 'x', 'link' => 'javascript:alert(1)' ), false ),
+			'entity encoded scheme'  => array( array( 'name' => 'x', 'link' => '&#106;avascript:alert(1)' ), false ),
+			'data uri'               => array( array( 'name' => 'x', 'link' => 'data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==' ), false ),
+			'quote breakout link'    => array( array( 'name' => 'x', 'link' => '" onmouseover="alert(1)' ), false ),
+			'script in name'         => array( array( 'name' => '<script>alert(1)</script>' ), true ),
+			'script in name, linked' => array( array( 'name' => '<script>alert(1)</script>', 'link' => 'https://example.com/' ), false ),
+			'img onerror in name'    => array( array( 'name' => '<img src=x onerror=alert(1)>' ), true ),
+			'img in name, linked'    => array( array( 'name' => '<img src=x onerror=alert(1)>', 'link' => 'https://example.com/' ), false ),
+			'quote breakout name'    => array( array( 'name' => '"><svg onload=alert(1)>' ), false ),
+			'css injection colors'   => array( array( 'name' => 'x', 'badgeColor' => 'red;background:url(javascript:alert(1))', 'linkColor' => '#fff;position:fixed', 'linkTextColor' => 'expression(alert(1))' ), false ),
+			'quote breakout class'   => array( array( 'name' => 'x', 'className' => 'ok" onmouseover="alert(1)' ), false ),
+			'tag breakout in class'  => array( array( 'name' => 'x', 'className' => '"><script>alert(1)</script>' ), false ),
 		);
 	}
 
-	private function assertSafeMarkup( string $html ): void {
+	/**
+	 * Hostile input either renders nothing or renders safe markup. Empty output is
+	 * safe, so the cases that are expected to render something say so explicitly.
+	 */
+	private function assertSafeMarkup( string $html, bool $expect_nothing = false ): void {
+		if ( $expect_nothing ) {
+			$this->assertSame( '', $html );
+			return;
+		}
 		$this->assertNotSame( '', $html );
 		$this->assertStringNotContainsStringIgnoringCase( '<script', $html );
 		$this->assertStringNotContainsStringIgnoringCase( '<svg', $html );
@@ -238,20 +252,22 @@ final class RenderingTest extends Credits_Integration_TestCase {
 	/**
 	 * @dataProvider hostile_attribute_provider
 	 */
-	public function test_hostile_block_attributes_render_safely( array $attrs ): void {
-		$this->assertSafeMarkup( $this->render_credit_block( $attrs ) );
+	public function test_hostile_block_attributes_render_safely( array $attrs, bool $expect_nothing ): void {
+		$this->assertSafeMarkup( $this->render_credit_block( $attrs ), $expect_nothing );
 	}
 
 	public function test_hostile_shortcode_input_renders_safely(): void {
 		foreach (
 			array(
-				"[credits link='javascript:alert(1)']x[/credits]",
-				'[credits link="&#106;avascript:alert(1)"]x[/credits]',
-				'[credits badge_color="red;background:url(x)" link_text_color="expression(1)"]<script>alert(1)</script>[/credits]',
-				'[credits name="<img src=x onerror=alert(1)>"]',
-			) as $shortcode
+				"[credits link='javascript:alert(1)']x[/credits]"                                                                  => false,
+				'[credits link="&#106;avascript:alert(1)"]x[/credits]'                                                             => false,
+				'[credits link="https://example.com/" badge_color="red;background:url(x)"]<script>alert(1)</script>[/credits]'     => false,
+				'[credits badge_color="red;background:url(x)" link_text_color="expression(1)"]<script>alert(1)</script>[/credits]' => true,
+				'[credits name="<img src=x onerror=alert(1)>"]'                                                                    => true,
+				'[credits name="<img src=x onerror=alert(1)>" link="https://example.com/"]'                                        => false,
+			) as $shortcode => $expect_nothing
 		) {
-			$this->assertSafeMarkup( do_shortcode( $shortcode ) );
+			$this->assertSafeMarkup( do_shortcode( $shortcode ), $expect_nothing );
 		}
 	}
 

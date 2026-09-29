@@ -322,10 +322,15 @@ function credits_load_textdomain() {
  * Sanitize/validate first. Escape only when a value is concatenated into HTML,
  * using the function that matches that context.
  *
+ * A usable link is a non-empty sanitized URL other than a bare "#". A credit
+ * with a name but no usable link renders as plain text in the same chip, with
+ * no anchor. A credit with no name and no usable link renders nothing, so an
+ * untouched block never publishes a placeholder credit.
+ *
  * @param array       $atts          Shortcode or block attributes.
  * @param string|null $content       Optional shortcode inner content (the name).
  * @param string      $wrapper_class Extra wrapper class(es) from the active block context.
- * @return string
+ * @return string Credit markup, or an empty string when there is nothing to show.
  */
 function credits_render_credit( $atts, $content = null, $wrapper_class = '' ) {
 	if ( ! is_array( $atts ) ) {
@@ -342,13 +347,16 @@ function credits_render_credit( $atts, $content = null, $wrapper_class = '' ) {
 	} else {
 		$name = sanitize_text_field( $attr( 'name' ) );
 	}
-	if ( '' === $name ) {
-		$name = __( 'Credit Link', 'credits-shortcode' );
-	}
 
-	$link = esc_url_raw( $attr( 'link' ) );
-	if ( '' === $link ) {
-		$link = '#';
+	// esc_url_raw() returns '' for unsafe schemes such as javascript:, so those are unusable too.
+	$link     = esc_url_raw( $attr( 'link' ) );
+	$has_link = ( '' !== $link && '#' !== $link );
+
+	if ( '' === $name ) {
+		if ( ! $has_link ) {
+			return '';
+		}
+		$name = __( 'Credit Link', 'credits-shortcode' );
 	}
 
 	$settings = credits_get_settings();
@@ -404,14 +412,21 @@ function credits_render_credit( $atts, $content = null, $wrapper_class = '' ) {
 		$html .= ' style="' . esc_attr( safecss_filter_attr( 'background-color: ' . $link_bg ) ) . '"';
 	}
 	$html .= '>';
-	$html .= '<a href="' . esc_url( $link ) . '"';
-	if ( credits_parse_new_tab( $atts ) ) {
-		$html .= ' target="_blank" rel="noopener noreferrer"';
-	}
+
+	$text_style = '';
 	if ( '' !== $link_text_clr ) {
-		$html .= ' style="' . esc_attr( safecss_filter_attr( 'color: ' . $link_text_clr ) ) . '"';
+		$text_style = ' style="' . esc_attr( safecss_filter_attr( 'color: ' . $link_text_clr ) ) . '"';
 	}
-	$html .= '>' . esc_html( $name ) . '</a>';
+	if ( $has_link ) {
+		$html .= '<a href="' . esc_url( $link ) . '"';
+		if ( credits_parse_new_tab( $atts ) ) {
+			$html .= ' target="_blank" rel="noopener noreferrer"';
+		}
+		$html .= $text_style . '>' . esc_html( $name ) . '</a>';
+	} else {
+		// No usable link: same chip, no anchor.
+		$html .= '<span class="cre_cate_text"' . $text_style . '>' . esc_html( $name ) . '</span>';
+	}
 	$html .= '</span></li></ul>';
 
 	return wp_kses( $html, credits_allowed_html() );
