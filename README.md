@@ -159,9 +159,15 @@ composer ci:integration                       # latest WordPress release
 WP_VERSION=6.3 composer ci:integration        # any release; 6.3 is the plugin's minimum
 ```
 
+To also drive the real block editor (insert a credit, edit its name, URL, type, spacing and custom class, save, reload, and check the published page), add the Playwright test. It uses the same SQLite WordPress, so it needs no MySQL either; the first run downloads Playwright and Chromium:
+
+```bash
+composer ci:e2e
+```
+
 The fast suite (`tests/`) uses WordPress stubs and stays instant. The integration suite (`tests/integration/`) exercises real block registration, script localization, `do_shortcode()`, `do_blocks()`, saving and reloading posts (including roles filtered by kses), settings sanitization, and uninstall. Installs live in `.wordpress-integration/<version>/`; delete that folder to start over.
 
-For the full tier, which adds the WordPress smoke test and the Playwright block-editor e2e, install MySQL (`brew install mysql && brew services start mysql`, root password `root`, or set `WP_DB_HOST` / `WP_DB_USER` / `WP_DB_PASSWORD`):
+For the full tier, which adds the WordPress smoke test to everything above, install MySQL (`brew install mysql && brew services start mysql`, root password `root`, or set `WP_DB_HOST` / `WP_DB_USER` / `WP_DB_PASSWORD`):
 
 ```bash
 composer ci:full

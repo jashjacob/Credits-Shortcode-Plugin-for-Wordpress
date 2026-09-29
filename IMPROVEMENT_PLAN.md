@@ -30,7 +30,7 @@ The initial review was completed on September 18, 2026 against version 1.5.0. Th
    - [x] Keep the fast unit suite and add a separate WordPress integration suite. `tests/integration/` with `phpunit-integration.xml.dist`; it runs against a disposable SQLite-backed WordPress from `scripts/setup-wordpress-integration.sh`, so no MySQL or Docker is needed.
    - [x] Exercise real script localization, block registration, `do_shortcode()`, and `render_block()` rather than only direct calls to the renderer.
    - [x] Cover site defaults, explicit overrides, custom classes, and representative unsafe URL, text, and color inputs using WordPress's own sanitizers. Also covers saving and reloading posts for administrator, editor, author, and contributor roles, settings sanitization, and uninstall.
-   - [ ] Add an editor smoke test: insert a credit, edit its values, save, reload, and verify the published output.
+   - [x] Add an editor smoke test: insert a credit, edit its values, save, reload, and verify the published output. `.cursor/test-block-editor.mjs` (run with `composer ci:e2e`) edits name, URL, type, spacing and custom class through the real editor, publishes, reloads, and checks the front end. It does not yet set the accent colors, which use the color picker.
    - [x] Test representative older and current supported WordPress versions using compatible PHP versions. `WP_VERSION=6.3` and the latest release both pass on PHP 8.5, which is also the local PHP; a hosted matrix is no longer run (see the note below).
    - [x] Document how contributors run both suites and the editor check. See the README's Development section.
 
