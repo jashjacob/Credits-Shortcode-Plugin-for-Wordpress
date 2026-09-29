@@ -39,10 +39,13 @@ final class CssStyleTest extends TestCase {
 		$this->assertStringContainsString( 'margin-inline: auto', $css );
 	}
 
-	public function test_stylesheet_sizes_text_and_padding_in_rem(): void {
+	public function test_stylesheet_sizes_scale_with_the_reader_but_never_shrink_below_the_old_pixels(): void {
 		$css = $this->css();
-		$this->assertStringContainsString( '--credits-font-size: 0.8125rem', $css );
-		$this->assertDoesNotMatchRegularExpression( '/(font-size|padding):\s*[\d.]+px/', $css, 'px ignores the reader\'s font-size preference' );
+		$this->assertStringContainsString( '--credits-font-size: max(13px, 0.8125rem)', $css );
+		$this->assertStringContainsString( 'padding: max(4px, 0.25rem) max(10px, 0.625rem)', $css );
+		// A bare px size ignores the reader's font-size preference; a bare rem size shrinks on themes
+		// that set html { font-size: 62.5% }. Both must sit inside max().
+		$this->assertDoesNotMatchRegularExpression( '/(font-size|padding):\s*[\d.]+(px|rem)\b/', $css );
 	}
 
 	public function test_stylesheet_lets_long_names_wrap_instead_of_overflowing(): void {

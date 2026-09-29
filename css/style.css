@@ -6,7 +6,9 @@
 /* --- Shared selector groups (modern + legacy div markup) --- */
 :root {
 	--credits-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-	--credits-font-size: 0.8125rem;
+	/* max() keeps today's 13px floor (themes with html { font-size: 62.5% } would otherwise shrink the
+	   chip) while still growing with the reader's font-size preference. */
+	--credits-font-size: max(13px, 0.8125rem);
 	--credits-line-height: 1.4;
 	--credits-radius: 3px;
 	--credits-badge-bg: #1d2327;
@@ -96,7 +98,7 @@ div.credits + p {
 :is(ul.credits li.credits, div.credits .credits-inner) span:not(.cre_cate_text) {
 	box-sizing: border-box;
 	display: inline-block;
-	padding: 0.25rem 0.625rem;
+	padding: max(4px, 0.25rem) max(10px, 0.625rem);
 	transition: background-color 0.2s ease, color 0.2s ease, filter 0.2s ease;
 }
 
