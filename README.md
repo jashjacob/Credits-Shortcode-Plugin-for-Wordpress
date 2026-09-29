@@ -8,7 +8,7 @@
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://php.net)
 [![Version](https://img.shields.io/badge/version-1.6.1-green.svg)](https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress)
 [![License](https://img.shields.io/badge/license-GPLv2-orange.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-PHPUnit%20%7C%20CI-brightgreen.svg)](.github/workflows/) <!-- TODO: replace with real CI status badge once the workflow runs on a public CI service -->
+[![Tests](https://img.shields.io/badge/tests-PHPUnit%20%7C%20local%20CI-brightgreen.svg)](scripts/ci-local.sh)
 
 **Credits Shortcode & Block** gives readers a clear path back to the original source. Add compact, theme-friendly **Source** or **Via** attribution links to posts and pages without writing markup.
 
@@ -138,14 +138,24 @@ Copy or symlink the directory into your site's `/wp-content/plugins/` and activa
 
 ## 🧪 Development & Testing
 
-### PHPUnit (runs on every push in GitHub Actions)
+### Local CI (runs before every push)
 
-The plugin ships with a PHPUnit test suite (**46 tests**, PHP **7.4–8.4** matrix) plus a **WordPress.org release zip** check on PHP 8.3.
+CI runs on your machine, not on GitHub Actions. One command runs the fast tier: PHP lint, the PHPUnit suite, a JavaScript syntax check, and the WordPress.org release zip check.
 
 ```bash
 composer install
-vendor/bin/phpunit
-bash scripts/build-wp-release.sh
+composer ci          # fast tier, a few seconds
+composer setup-hooks # once: run the fast tier automatically on every git push
+```
+
+Skip the hook for a single push with `git push --no-verify`.
+
+It tests only the PHP version installed on your machine. The plugin declares **PHP 7.4+**, so avoid syntax or functions newer than that.
+
+For the full tier, which adds the WordPress smoke test and the Playwright block-editor e2e, install MySQL (`brew install mysql && brew services start mysql`, root password `root`, or set `WP_DB_HOST` / `WP_DB_USER` / `WP_DB_PASSWORD`):
+
+```bash
+composer ci:full
 ```
 
 ### Full WordPress stack (local or Cloud Agent)
@@ -162,10 +172,6 @@ Stub PHPUnit does not boot WordPress. For runtime shortcode, block, and variatio
 ```
 
 The block E2E runner sets site default type to **Via** when `.wordpress/` exists and reads the effective default via `CREDITS_E2E_DEFAULT_TYPE` so tests match **Settings → Credits**.
-
-### Optional CI: WordPress smoke workflow
-
-On GitHub, run **Actions → WordPress smoke → Run workflow** (`workflow_dispatch`) or rely on pushes to `master` that touch plugin paths. The workflow uses a **MySQL 8 service** and `scripts/ci-wordpress-smoke.sh` (PHPUnit + WP shortcode smoke + 21 variation tests). Day-to-day PRs still use fast PHPUnit only.
 
 ### Translation template
 

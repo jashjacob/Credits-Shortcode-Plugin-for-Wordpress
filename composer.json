@@ -24,7 +24,10 @@
 		]
 	},
 	"scripts": {
-		"test": "phpunit"
+		"test": "phpunit",
+		"ci": "bash scripts/ci-local.sh",
+		"ci:full": "bash scripts/ci-local.sh --full",
+		"setup-hooks": "git config core.hooksPath scripts/git-hooks"
 	},
 	"config": {
 		"platform": {

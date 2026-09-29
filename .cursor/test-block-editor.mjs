@@ -1,9 +1,10 @@
 import { chromium } from 'playwright';
 import { mkdirSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
 
 const BASE = 'http://127.0.0.1:8080';
-const ART = '/opt/cursor/artifacts';
+const ART = process.env.CREDITS_E2E_ARTIFACTS || join(tmpdir(), 'credits-e2e-artifacts');
 mkdirSync(ART, { recursive: true });
 
 const siteDefaultType = (process.env.CREDITS_E2E_DEFAULT_TYPE || 'via').toLowerCase() === 'via' ? 'via' : 'source';

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Runs the fast local CI tier before every push. Bypass once with: git push --no-verify
+exec "$(git rev-parse --show-toplevel)/scripts/ci-local.sh"
