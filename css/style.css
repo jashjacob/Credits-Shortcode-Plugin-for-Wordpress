@@ -6,17 +6,22 @@
 /* --- Shared selector groups (modern + legacy div markup) --- */
 :root {
 	--credits-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-	--credits-font-size: 13px;
+	--credits-font-size: 0.8125rem;
 	--credits-line-height: 1.4;
 	--credits-radius: 3px;
 	--credits-badge-bg: #1d2327;
 	--credits-badge-text: #ffffff;
 	--credits-link-bg: #f0f0f1;
+	--credits-link-text: #1d2327;
 	--credits-margin-block: 1.25rem;
 	--credits-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Block / shortcode list wrapper — themes often reset list and flow margins. */
+/*
+ * Block / shortcode list wrapper. The two !important declarations are the ones a compatibility
+ * check showed are still needed: classic Twenty Twenty-One zeroes first/last-child margins and
+ * sets its own column max-width with higher specificity than a plugin class can match.
+ */
 :is(
 	.entry-content > ul.credits,
 	.entry-content > div.credits,
@@ -27,15 +32,13 @@
 ) {
 	box-sizing: border-box;
 	clear: both;
-	display: block !important;
-	list-style: none !important;
-	margin-left: auto !important;
-	margin-right: auto !important;
-	margin-top: var(--credits-margin-block) !important;
-	margin-bottom: var(--credits-margin-block) !important;
+	display: block;
+	list-style: none;
+	margin-block: var(--credits-margin-block) !important;
+	margin-inline: auto;
 	max-width: var(--wp--style--global--content-size, 100%) !important;
-	padding: 0 !important;
-	text-align: left;
+	padding: 0;
+	text-align: start;
 }
 
 .credits-spacing-compact {
@@ -53,34 +56,35 @@
 /* Invalid <p><ul>…</ul></p> repair: drop stray paragraph margins beside credits. */
 .wp-block-paragraph:has(> :is(ul.credits, div.credits)),
 .wp-block-paragraph:has(+ :is(ul.credits, div.credits)) {
-	margin-block-end: 0 !important;
-	margin-block-start: 0 !important;
+	margin-block-end: 0;
+	margin-block-start: 0;
 }
 
 :is(ul.credits, div.credits) + p:empty {
-	margin-block-end: 0 !important;
-	margin-block-start: 0 !important;
+	margin-block-end: 0;
+	margin-block-start: 0;
 }
 
 ul.credits.wp-block-credits-shortcode + p,
 ul.credits + p,
 div.credits + p {
-	margin-block-end: 0 !important;
-	margin-block-start: 0 !important;
+	margin-block-end: 0;
+	margin-block-start: 0;
 }
 
 /* Single credit row (chip) */
 :is(ul.credits li.credits, div.credits .credits-inner) {
 	align-items: stretch;
 	border-radius: var(--credits-radius);
-	display: inline-flex !important;
+	display: inline-flex;
 	font-family: var(--credits-font-family);
 	font-size: var(--credits-font-size);
 	line-height: var(--credits-line-height);
-	list-style: none !important;
-	margin: 0 !important;
+	list-style: none;
+	margin: 0;
+	max-width: 100%;
 	overflow: hidden;
-	padding: 0 !important;
+	padding: 0;
 	transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
@@ -89,26 +93,40 @@ div.credits + p {
 	transform: translateY(-1px);
 }
 
-:is(ul.credits li.credits, div.credits .credits-inner) span {
+:is(ul.credits li.credits, div.credits .credits-inner) span:not(.cre_cate_text) {
 	box-sizing: border-box;
 	display: inline-block;
-	padding: 4px 10px;
+	padding: 0.25rem 0.625rem;
 	transition: background-color 0.2s ease, color 0.2s ease, filter 0.2s ease;
 }
 
 :is(ul.credits, div.credits) .cre_cate {
 	background: var(--credits-badge-bg);
-	border-radius: var(--credits-radius) 0 0 var(--credits-radius);
+	border-end-start-radius: var(--credits-radius);
+	border-start-start-radius: var(--credits-radius);
 	color: var(--credits-badge-text);
 	font-weight: 600;
 }
 
 :is(ul.credits, div.credits) .cre_cate_link {
 	background: var(--credits-link-bg);
-	border-radius: 0 var(--credits-radius) var(--credits-radius) 0;
+	border-end-end-radius: var(--credits-radius);
+	border-start-end-radius: var(--credits-radius);
+	color: var(--credits-link-text);
+	min-width: 0;
+	overflow-wrap: anywhere;
 }
 
-:is(ul.credits, div.credits) .cre_cate_link a {
+/*
+ * A link background chosen by the author or in Settings keeps the text following the theme, as it
+ * did before the default text color existed, so sites that already fixed a dark theme this way
+ * do not regress.
+ */
+:is(ul.credits, div.credits) .cre_cate_link[style*="background"] {
+	color: inherit;
+}
+
+:is(ul.credits, div.credits) .cre_cate_link :is(a, .cre_cate_text) {
 	color: inherit;
 	font-weight: 500;
 	text-decoration: none;
@@ -125,4 +143,27 @@ div.credits + p {
 
 :is(ul.credits, div.credits) .cre_cate_link a:hover {
 	text-decoration: underline;
+}
+
+/*
+ * Keyboard focus. The ring uses the link's own text color, so it contrasts with whatever background
+ * the link area has, and it stays inside the link area's padding, so the chip's overflow: hidden
+ * never clips it. The outline keeps !important because themes restyle a:focus with high
+ * specificity (Twenty Twenty-One's is a transparent outline, which left the link with no ring).
+ */
+:is(ul.credits, div.credits) .cre_cate_link a:focus-visible {
+	outline: 2px solid currentColor !important;
+	outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:is(ul.credits li.credits, div.credits .credits-inner),
+	:is(ul.credits li.credits, div.credits .credits-inner) span:not(.cre_cate_text),
+	:is(ul.credits, div.credits) .cre_cate_link :is(a, .cre_cate_text) {
+		transition: none;
+	}
+
+	:is(ul.credits li.credits, div.credits .credits-inner):hover {
+		transform: none;
+	}
 }
