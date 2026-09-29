@@ -31,8 +31,8 @@ Give readers a clear path back to the original source. Credits Shortcode & Block
 
 1. Open a post or page in the Block Editor.
 2. Add the **Credits Link** block by clicking **+** or typing `/credits`.
-3. Choose Source or Via, enter the attribution name, and add its URL.
-4. Optionally choose accent colors in the block sidebar.
+3. Type the attribution name in the block and add its URL in the field beneath it. A credit that is missing either is outlined in the editor with a note saying what is missing.
+4. Optionally choose Source or Via, spacing, whether the link opens in a new tab, and accent colors in the block sidebar.
 
 The block is rendered dynamically, so saved content stays clean and current.
 
@@ -63,6 +63,7 @@ Supported attributes:
 * `link_color` - link area background as a 3- or 6-digit hex color.
 * `link_text_color` - link text as a 3- or 6-digit hex color.
 * `spacing` - `compact`, `standard`, or `spacious`; defaults to the site-wide setting.
+* `newtab` - set to `false` to open the link in the same tab; credits open in a new tab by default. `new_tab` also works.
 
 To keep several credits close together:
 
@@ -101,11 +102,11 @@ No. The plugin makes no external requests and includes no analytics or tracking.
 
 = Does it add rel="nofollow" to links? =
 
-No. Credit links open in a new tab with `noopener noreferrer`. The plugin does not add `nofollow` automatically.
+No. Credit links open in a new tab with `noopener noreferrer` by default; turn off Open in new tab (or use `newtab="false"`) for a same-tab link. The plugin does not add `nofollow` automatically.
 
 = Does it work with the Classic Editor? =
 
-Yes. When the Classic Editor is active, an Add Credits toolbar button inserts the shortcode for you.
+Yes. When the Classic Editor is active, an Add Credits toolbar button opens a form for the type, name, link, and link opening, and inserts the shortcode for you.
 
 == Screenshots ==
 
