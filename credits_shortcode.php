@@ -592,7 +592,8 @@ function credits_register_settings() {
 		__( 'Default credit type', 'credits-shortcode' ),
 		'credits_field_default_type',
 		'credits-shortcode',
-		'credits_shortcode_defaults'
+		'credits_shortcode_defaults',
+		array( 'label_for' => 'credits_default_type' )
 	);
 
 	add_settings_field(
@@ -600,7 +601,8 @@ function credits_register_settings() {
 		__( 'Default spacing between credits', 'credits-shortcode' ),
 		'credits_field_default_spacing',
 		'credits-shortcode',
-		'credits_shortcode_defaults'
+		'credits_shortcode_defaults',
+		array( 'label_for' => 'credits_default_spacing' )
 	);
 
 	foreach ( array(
@@ -614,7 +616,10 @@ function credits_register_settings() {
 			'credits_field_color',
 			'credits-shortcode',
 			'credits_shortcode_defaults',
-			array( 'color_key' => $key )
+			array(
+				'color_key' => $key,
+				'label_for' => 'credits_' . $key,
+			)
 		);
 	}
 }
@@ -632,7 +637,7 @@ function credits_settings_section_intro() {
 function credits_field_default_type() {
 	$type = credits_get_settings()['type'];
 	?>
-	<select name="credits_shortcode_settings[type]">
+	<select id="credits_default_type" name="credits_shortcode_settings[type]">
 		<option value="source" <?php selected( 'source', $type ); ?>><?php echo esc_html( __( 'Source', 'credits-shortcode' ) ); ?></option>
 		<option value="via" <?php selected( 'via', $type ); ?>><?php echo esc_html( __( 'Via', 'credits-shortcode' ) ); ?></option>
 	</select>
@@ -645,12 +650,12 @@ function credits_field_default_type() {
 function credits_field_default_spacing() {
 	$spacing = credits_get_settings()['spacing'];
 	?>
-	<select name="credits_shortcode_settings[spacing]">
+	<select id="credits_default_spacing" name="credits_shortcode_settings[spacing]" aria-describedby="credits_default_spacing_description">
 		<option value="compact" <?php selected( 'compact', $spacing ); ?>><?php echo esc_html( __( 'Compact', 'credits-shortcode' ) ); ?></option>
 		<option value="standard" <?php selected( 'standard', $spacing ); ?>><?php echo esc_html( __( 'Standard', 'credits-shortcode' ) ); ?></option>
 		<option value="spacious" <?php selected( 'spacious', $spacing ); ?>><?php echo esc_html( __( 'Spacious', 'credits-shortcode' ) ); ?></option>
 	</select>
-	<p class="description"><?php echo esc_html( __( 'Controls the vertical gap between consecutive credits.', 'credits-shortcode' ) ); ?></p>
+	<p class="description" id="credits_default_spacing_description"><?php echo esc_html( __( 'Controls the vertical gap between consecutive credits.', 'credits-shortcode' ) ); ?></p>
 	<?php
 }
 
@@ -670,6 +675,7 @@ function credits_field_color( $args ) {
 	?>
 	<input
 		type="text"
+		id="credits_<?php echo esc_attr( $key ); ?>"
 		class="credits-color-picker"
 		name="credits_shortcode_settings[<?php echo esc_attr( $key ); ?>]"
 		value="<?php echo esc_attr( $value ); ?>"
