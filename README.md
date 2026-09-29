@@ -51,6 +51,8 @@ Supports the modern **Gutenberg Block Editor** (with live preview, customizable 
    - **Accent Color Settings**: badge background, link background, and link text colors. Colors you leave unchanged follow **Settings → Credits**; **Reset colors to site default** clears this credit's overrides.
 5. Choose a **Spacing** preset—Use site default, Compact, Standard, or Spacious—for this credit.
 
+**Incomplete credits:** a credit needs a name or a usable link to appear. With a name but no usable link (blank, a bare `#`, or an unsafe address such as `javascript:`), the name shows as plain text in the same chip, with no link. With neither, nothing is shown, so a block you insert and leave untouched never publishes a placeholder. Links to a section of the page, such as `#references`, still work as links. The same rules apply to shortcodes.
+
 ---
 
 ### Option 2: WordPress Shortcodes
@@ -96,23 +98,20 @@ If you use the Classic Editor plugin:
 
 ## 🎨 Customizing Styles via CSS
 
-You can also override the default appearance in **Appearance > Customize > Additional CSS**:
+Override the design tokens in **Appearance > Customize > Additional CSS**; no `!important` needed:
 
 ```css
-/* Scoped selectors match the plugin stylesheet (higher specificity helps on block themes). */
-ul.credits .cre_cate {
-    background: #0073aa !important;
-    font-style: normal;
-}
-
-ul.credits .cre_cate_link {
-    background: #f0f0f0 !important;
-}
-
-ul.credits .cre_cate_link a:hover {
-    text-decoration: underline !important;
+:root {
+    --credits-badge-bg: #0073aa;      /* Source / Via badge */
+    --credits-badge-text: #ffffff;
+    --credits-link-bg: #f0f0f0;       /* name / link area */
+    --credits-link-text: #1d2327;     /* readable on the default light link area, even in dark themes */
+    --credits-font-family: inherit;   /* use the theme's typeface */
+    --credits-font-size: 0.875rem;    /* text and padding scale with the reader's font-size setting */
 }
 ```
+
+Colors set on an individual block or under **Settings → Credits** are inline styles and take precedence over these tokens.
 
 ---
 
@@ -213,6 +212,9 @@ The plugin is translation-ready via the `credits-shortcode` text domain. If you'
 ## 📜 Changelog
 
 ### Unreleased
+- Credits with a name but no usable link now show the name as plain text instead of a dead `#` link, and credits with neither show nothing (see **Incomplete credits** above).
+- Accessibility and theme fixes: long names wrap instead of overflowing on narrow screens, links get a visible keyboard focus ring, hover motion respects the reduced-motion setting, right-to-left layouts mirror, sizes follow the reader's font-size setting (never below 13px), the default text color is readable on dark themes, and most `!important` rules are gone.
+- Settings → Credits labels are now tied to their controls.
 - Block: edit the credit name and link inline; credits missing a name, a link, or a usable link are flagged in the editor only. Added **Reset colors to site default**.
 - Added an **Open in new tab** option to the block (`newTab`) and shortcode (`newtab` / `new_tab`); credits without it still open in a new tab.
 - Classic Editor: one form instead of browser prompts, with validation and safer shortcode insertion (a link like `?a=1&copy=2` is no longer corrupted).

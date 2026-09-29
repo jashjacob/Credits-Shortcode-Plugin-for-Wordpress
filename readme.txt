@@ -65,6 +65,8 @@ Supported attributes:
 * `spacing` - `compact`, `standard`, or `spacious`; defaults to the site-wide setting.
 * `newtab` - set to `false` to open the link in the same tab; credits open in a new tab by default. `new_tab` also works.
 
+A credit needs a name or a usable link to appear. With a name but no usable link, the name is shown as plain text; with neither, nothing is shown.
+
 To keep several credits close together:
 
 `[credits link="https://example.com" spacing="compact"]Source Name[/credits]`

@@ -44,7 +44,7 @@ The initial review was completed on September 18, 2026 against version 1.5.0. Th
 
    - [x] Add inline name and URL editing to the block, while retaining sidebar controls for appearance. Inline name (`RichText`, stored as plain text) and inline link field; the sidebar keeps the same fields.
    - [x] Show an instructional empty state and clear feedback for missing or invalid URLs. Avoid presenting an untouched credit as a finished link. Placeholder, dashed outline and a text note saying what is missing; editor-only (`css/editor.css`).
-   - [ ] Define and test incomplete-credit rendering before changing it. Preserve existing valid links and intentionally used fragment links; distinguish the editor placeholder from saved content. **Defined and pinned; front end deliberately unchanged.** `tests/integration/IncompleteCreditsTest.php` records today's output: a missing, `#` or unsafe link renders `<a href="#" target="_blank">` and a blank name renders "Credit Link". Changing what published posts show is a product decision. Proposal: a name with no usable link renders as plain text in the same chip, and a credit with neither renders nothing; valid and `#fragment` links stay as they are.
+   - [x] Define and test incomplete-credit rendering before changing it. Preserve existing valid links and intentionally used fragment links; distinguish the editor placeholder from saved content. Pinned first (`tests/integration/IncompleteCreditsTest.php`), then changed: a name with no usable link renders as plain text in the same chip (`.cre_cate_text`), a credit with neither renders nothing, and valid and `#fragment` links are untouched.
    - [x] Add an "Open in new tab" control to blocks and shortcodes. Preserve the existing new-tab behavior when the new attribute is absent, and retain appropriate link security attributes. Block `newTab` (default `true`), shortcode `newtab` / `new_tab`. New tab keeps `target="_blank" rel="noopener noreferrer"`; same tab renders a plain link.
    - [x] Add "Use site default" to the credit-type selector so an explicit Source/Via override can be cleared. Already in the block; the Classic Editor form has it too.
    - [x] Make inherited colors and per-credit overrides understandable, with a clear reset-to-default action. A hint that unchanged colors follow the site defaults, plus **Reset colors to site default**.
@@ -60,15 +60,15 @@ The initial review was completed on September 18, 2026 against version 1.5.0. Th
 
 4. **Improve theme compatibility and accessibility.**
 
-   - [ ] Replace unnecessary `!important` rules with scoped styles and CSS variables for colors and spacing. Retain targeted legacy rules where a compatibility check demonstrates they are needed.
-   - [ ] Allow theme typography and container layout to influence the credit without losing its compact badge presentation.
-   - [ ] Handle long names and unbroken text on narrow screens without horizontal overflow.
-   - [ ] Use logical alignment, spacing, and corner rules for right-to-left layouts.
-   - [ ] Add visible keyboard focus styles and ensure they are not clipped by the badge container.
-   - [ ] Respect `prefers-reduced-motion` for hover movement and transitions.
-   - [ ] Check default and inherited color combinations in light and dark themes; add useful contrast feedback for custom colors where practical.
-   - [ ] Associate settings-page labels with their controls using stable IDs and Settings API label configuration.
-   - [ ] Verify editor/front-end consistency in a classic theme and a block theme, including narrow layouts, 200% zoom, and keyboard navigation.
+   - [x] Replace unnecessary `!important` rules with scoped styles and CSS variables for colors and spacing. Retain targeted legacy rules where a compatibility check demonstrates they are needed. 14 of 16 removed and verified unchanged in Twenty Twenty-One, -Three, -Four and -Five; `margin-block` and `max-width` on the wrapper stay, and so does the focus outline, because classic Twenty Twenty-One overrides them at higher specificity. Tokens are documented in the README.
+   - [ ] Allow theme typography and container layout to influence the credit without losing its compact badge presentation. Typography is overridable through the `--credits-*` tokens and sizes scale with the reader's font-size setting (with a 13px floor so `html { font-size: 62.5% }` themes do not shrink the chip). Open: in classic Twenty Twenty-One the credit ignores the theme's text column (full width, touches the screen edge at 320px) because of the `max-width` `!important`; changing that alters the default look.
+   - [x] Handle long names and unbroken text on narrow screens without horizontal overflow. Verified at 320px in four themes.
+   - [x] Use logical alignment, spacing, and corner rules for right-to-left layouts. Verified with `dir="rtl"`.
+   - [x] Add visible keyboard focus styles and ensure they are not clipped by the badge container. A 2px ring in the link's text color, inside the chip's clip box, verified in four themes.
+   - [x] Respect `prefers-reduced-motion` for hover movement and transitions. 
+   - [ ] Check default and inherited color combinations in light and dark themes; add useful contrast feedback for custom colors where practical. The default chip is now readable on dark themes (1.1:1 -> 13.9:1); a custom link background keeps the theme's text color as before. Contrast feedback for custom colors in the editor is not done.
+   - [x] Associate settings-page labels with their controls using stable IDs and Settings API label configuration. `label_for` and stable ids; integration-tested.
+   - [ ] Verify editor/front-end consistency in a classic theme and a block theme, including narrow layouts, 200% zoom, and keyboard navigation. Front end verified in a classic theme and three block themes at narrow width, 200% text zoom and keyboard focus. The editor was only checked against a static copy; note the editor pads the inline name field wider than the front end.
 
    Acceptance: credits remain readable and operable across the checked themes and layouts, long text does not overflow, RTL presentation is coherent, and site owners can customize appearance without competing with broad overrides.
 
