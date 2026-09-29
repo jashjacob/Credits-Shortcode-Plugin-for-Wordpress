@@ -30,7 +30,7 @@ trap cleanup EXIT
 wp option update siteurl "$URL" >/dev/null
 wp option update home "$URL" >/dev/null
 wp option update credits_shortcode_settings \
-	'{"type":"via","spacing":"standard","badge_color":"","link_color":"","link_text_color":""}' \
+	'{"type":"via","spacing":"standard","badge_color":"#123456","link_color":"","link_text_color":""}' \
 	--format=json >/dev/null
 
 wp server --host=127.0.0.1 --port="$PORT" >/dev/null 2>&1 &

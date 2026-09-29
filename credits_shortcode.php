@@ -503,6 +503,13 @@ function credits_register_gutenberg_block() {
 		credits_asset_version()
 	);
 
+	// Editor-only helpers (incomplete-credit notice, inline link field).
+	wp_register_style(
+		'credits-shortcode-editor',
+		plugins_url( 'css/editor.css', __FILE__ ),
+		array( 'credits-shortcode' ),
+		credits_asset_version()
+	);
 
 	register_block_type_from_metadata(
 		__DIR__ . '/block.json',

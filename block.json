@@ -12,7 +12,7 @@
   "attributes": {
     "link": {
       "type": "string",
-      "default": "#"
+      "default": ""
     },
     "type": {
       "type": "string",
@@ -44,6 +44,6 @@
     }
   },
   "editorScript": "credits-block-js",
-  "editorStyle": "credits-shortcode",
+  "editorStyle": ["credits-shortcode", "credits-shortcode-editor"],
   "style": "credits-shortcode"
 }
