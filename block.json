@@ -12,7 +12,7 @@
   "attributes": {
     "link": {
       "type": "string",
-      "default": "#"
+      "default": ""
     },
     "type": {
       "type": "string",
@@ -37,9 +37,13 @@
     "linkTextColor": {
       "type": "string",
       "default": ""
+    },
+    "newTab": {
+      "type": "boolean",
+      "default": true
     }
   },
   "editorScript": "credits-block-js",
-  "editorStyle": "credits-shortcode",
+  "editorStyle": ["credits-shortcode", "credits-shortcode-editor"],
   "style": "credits-shortcode"
 }

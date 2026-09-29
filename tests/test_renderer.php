@@ -178,6 +178,45 @@ final class RendererTest extends TestCase {
 	}
 
 	/* ---------------------------------------------------------------------
+	 * Open in new tab
+	 * ------------------------------------------------------------------ */
+
+	public function test_new_tab_is_the_default_when_no_attribute_is_given(): void {
+		$out = $this->html( array( 'name' => 'Example', 'link' => 'https://example.com/' ) );
+		$this->assertStringContainsString( 'target="_blank"', $out );
+		$this->assertStringContainsString( 'rel="noopener noreferrer"', $out );
+	}
+
+	public function test_explicit_false_values_open_in_the_same_tab_without_target_or_rel(): void {
+		foreach ( array( false, 'false', 'FALSE', '0', 0, 'no', 'off', ' false ' ) as $off ) {
+			foreach ( array( 'newTab', 'new_tab', 'newtab' ) as $key ) {
+				$out = $this->html( array( 'name' => 'Example', 'link' => 'https://example.com/', $key => $off ) );
+				$this->assertStringNotContainsString( 'target=', $out, $key . '=' . var_export( $off, true ) );
+				$this->assertStringNotContainsString( 'rel=', $out, $key . '=' . var_export( $off, true ) );
+				$this->assertStringContainsString( 'href="https://example.com/"', $out );
+			}
+		}
+	}
+
+	public function test_true_empty_and_unrecognised_values_keep_the_new_tab_default(): void {
+		foreach ( array( true, 'true', '1', 1, 'yes', 'on', '', null, 'garbage', array( 'x' ), new stdClass() ) as $on ) {
+			$out = $this->html( array( 'name' => 'Example', 'link' => 'https://example.com/', 'newTab' => $on ) );
+			$this->assertStringContainsString( 'target="_blank"', $out, var_export( $on, true ) );
+			$this->assertStringContainsString( 'rel="noopener noreferrer"', $out, var_export( $on, true ) );
+		}
+	}
+
+	public function test_block_render_honors_the_new_tab_attribute(): void {
+		$GLOBALS['credits_test_block_wrapper_attributes'] = 'class="wp-block-credits-shortcode"';
+
+		$same_tab = credits_render_block( array( 'name' => 'x', 'link' => 'https://example.com/', 'newTab' => false ) );
+		$this->assertStringNotContainsString( 'target=', $same_tab );
+
+		$new_tab = credits_render_block( array( 'name' => 'x', 'link' => 'https://example.com/', 'newTab' => true ) );
+		$this->assertStringContainsString( 'target="_blank"', $new_tab );
+	}
+
+	/* ---------------------------------------------------------------------
 	 * Colors
 	 * ------------------------------------------------------------------ */
 

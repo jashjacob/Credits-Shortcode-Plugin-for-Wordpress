@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Credits Shortcode & Block 1.6.0\n"
+"Project-Id-Version: Credits Shortcode & Block 1.6.1\n"
 "Report-Msgid-Bugs-To: https://github.com/jashjacob/Credits-Shortcode-Plugin-for-Wordpress/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-23T11:29:43+00:00\n"
+"POT-Creation-Date: 2026-09-29T08:06:34+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: credits-shortcode\n"
@@ -39,71 +39,185 @@ msgstr ""
 msgid "https://jashjacob.com"
 msgstr ""
 
-#: credits_shortcode.php:294
+#: credits_shortcode.php:346
 msgid "Credit Link"
 msgstr ""
 
-#: credits_shortcode.php:312
-#: credits_shortcode.php:519
+#: credits_shortcode.php:364
+#: credits_shortcode.php:637
+#: tinymce-i18n.php:20
+#: js/credits-block.js:131
+#: js/credits-block.js:187
 msgid "Via"
 msgstr ""
 
-#: credits_shortcode.php:312
-#: credits_shortcode.php:518
+#: credits_shortcode.php:364
+#: credits_shortcode.php:636
+#: tinymce-i18n.php:19
+#: js/credits-block.js:131
+#: js/credits-block.js:186
 msgid "Source"
 msgstr ""
 
-#: credits_shortcode.php:446
-#: credits_shortcode.php:572
+#: credits_shortcode.php:564
+#: credits_shortcode.php:690
 msgid "Credits Shortcode"
 msgstr ""
 
-#: credits_shortcode.php:447
+#: credits_shortcode.php:565
 msgid "Credits"
 msgstr ""
 
-#: credits_shortcode.php:467
+#: credits_shortcode.php:585
 msgid "Default Credit Appearance"
 msgstr ""
 
-#: credits_shortcode.php:474
+#: credits_shortcode.php:592
 msgid "Default credit type"
 msgstr ""
 
-#: credits_shortcode.php:482
+#: credits_shortcode.php:600
 msgid "Default spacing between credits"
 msgstr ""
 
-#: credits_shortcode.php:489
+#: credits_shortcode.php:607
 msgid "Badge background color"
 msgstr ""
 
-#: credits_shortcode.php:490
+#: credits_shortcode.php:608
 msgid "Link background color"
 msgstr ""
 
-#: credits_shortcode.php:491
+#: credits_shortcode.php:609
 msgid "Link text color"
 msgstr ""
 
-#: credits_shortcode.php:508
+#: credits_shortcode.php:626
 msgid "These defaults apply when a shortcode or block does not set its own values. Individual credits can override spacing and colors. Leave colors empty to inherit neutral plugin styling."
 msgstr ""
 
-#: credits_shortcode.php:531
+#: credits_shortcode.php:649
+#: js/credits-block.js:222
 msgid "Compact"
 msgstr ""
 
-#: credits_shortcode.php:532
+#: credits_shortcode.php:650
+#: js/credits-block.js:223
 msgid "Standard"
 msgstr ""
 
-#: credits_shortcode.php:533
+#: credits_shortcode.php:651
+#: js/credits-block.js:224
 msgid "Spacious"
 msgstr ""
 
-#: credits_shortcode.php:535
+#: credits_shortcode.php:653
 msgid "Controls the vertical gap between consecutive credits."
+msgstr ""
+
+#: tinymce-i18n.php:16
+msgid "Add Credits"
+msgstr ""
+
+#: tinymce-i18n.php:17
+#: js/credits-block.js:182
+msgid "Credit Type"
+msgstr ""
+
+#: tinymce-i18n.php:18
+#: js/credits-block.js:185
+#: js/credits-block.js:221
+msgid "Use site default"
+msgstr ""
+
+#: tinymce-i18n.php:21
+msgid "Name"
+msgstr ""
+
+#: tinymce-i18n.php:22
+#: js/credits-block.js:202
+#: js/credits-block.js:334
+msgid "Link URL"
+msgstr ""
+
+#: tinymce-i18n.php:23
+msgid "Enter a name and a link."
+msgstr ""
+
+#: tinymce-i18n.php:24
+msgid "Use a link that starts with http://, https://, mailto: or ftp://, or a relative address."
+msgstr ""
+
+#: js/credits-block.js:81
+msgid "Credits Link"
+msgstr ""
+
+#: js/credits-block.js:140
+msgid "Add a link so readers can reach the source."
+msgstr ""
+
+#: js/credits-block.js:142
+msgid "This link cannot be used. Start it with http://, https://, mailto: or ftp://."
+msgstr ""
+
+#: js/credits-block.js:145
+msgid "Add a name for this credit."
+msgstr ""
+
+#: js/credits-block.js:180
+msgid "Credit Settings"
+msgstr ""
+
+#: js/credits-block.js:194
+msgid "Source / Via Name"
+msgstr ""
+
+#: js/credits-block.js:196
+msgid "e.g. TechZei"
+msgstr ""
+
+#: js/credits-block.js:211
+msgid "Open in new tab"
+msgstr ""
+
+#: js/credits-block.js:218
+msgid "Spacing"
+msgstr ""
+
+#: js/credits-block.js:239
+msgid "Accent Color Settings"
+msgstr ""
+
+#: js/credits-block.js:247
+msgid "Badge Background Color"
+msgstr ""
+
+#: js/credits-block.js:254
+msgid "Link Background Color"
+msgstr ""
+
+#: js/credits-block.js:261
+msgid "Link Text Color"
+msgstr ""
+
+#: js/credits-block.js:268
+msgid "Colors you leave unchanged follow the site defaults set under Settings → Credits."
+msgstr ""
+
+#: js/credits-block.js:279
+msgid "Reset colors to site default"
+msgstr ""
+
+#: js/credits-block.js:294
+msgid "Add credit name"
+msgstr ""
+
+#: js/credits-block.js:295
+msgid "Credit name"
+msgstr ""
+
+#: js/credits-block.js:300
+msgid "Credit Name"
 msgstr ""
 
 #: block.json

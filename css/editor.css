@@ -1,0 +1,74 @@
+/**
+ * Credits Link block: editor-only helpers (loaded in the block editor, never on the front end).
+ */
+
+/* Incomplete credit: a dashed outline and a text notice, so it never reads as a finished link. */
+.wp-block-credits-shortcode.credits-editor-incomplete li.credits {
+	outline: 1px dashed #b32d2e;
+	outline-offset: 2px;
+}
+
+.wp-block-credits-shortcode .credits-editor-name {
+	min-width: 6em;
+}
+
+.wp-block-credits-shortcode .credits-editor-name:focus {
+	outline: none;
+}
+
+.wp-block-credits-shortcode li.credits-editor-notice,
+.wp-block-credits-shortcode li.credits-editor-link-row {
+	display: block;
+	font-family: var(--credits-font-family);
+	font-size: 12px;
+	line-height: 1.5;
+	list-style: none;
+	margin: 6px 0 0;
+	padding: 0;
+}
+
+.wp-block-credits-shortcode li.credits-editor-notice span {
+	color: #b32d2e;
+	display: block;
+}
+
+.wp-block-credits-shortcode li.credits-editor-link-row {
+	align-items: center;
+	display: flex;
+	gap: 8px;
+}
+
+.wp-block-credits-shortcode li.credits-editor-link-row label {
+	flex: none;
+	font-weight: 600;
+}
+
+.wp-block-credits-shortcode li.credits-editor-link-row input {
+	border: 1px solid #949494;
+	border-radius: 2px;
+	box-sizing: border-box;
+	color: inherit;
+	flex: 1 1 auto;
+	font: inherit;
+	max-width: 32em;
+	min-width: 0;
+	padding: 4px 8px;
+}
+
+.wp-block-credits-shortcode li.credits-editor-link-row input:focus {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+	outline: 2px solid transparent;
+}
+
+.wp-block-credits-shortcode li.credits-editor-link-row input[aria-invalid="true"] {
+	border-color: #b32d2e;
+	box-shadow: 0 0 0 1px #b32d2e;
+}
+
+/* Sidebar (color panel) hint. Lives in the editor page, not the canvas. */
+.credits-color-help {
+	color: #757575;
+	font-size: 12px;
+	margin: 0 0 8px;
+}

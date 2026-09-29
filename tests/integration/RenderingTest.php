@@ -46,6 +46,16 @@ final class RenderingTest extends Credits_Integration_TestCase {
 		$this->assertStringContainsString( 'rel="noopener noreferrer"', $html );
 	}
 
+	public function test_shortcode_saved_by_the_classic_editor_keeps_the_query_string_intact(): void {
+		// TinyMCE serializes "&" as "&amp;" and the dialog percent-encodes "[]", so this is
+		// what reaches do_shortcode(). "&copy=2" must not turn into a copyright sign.
+		$html = do_shortcode( '[credits link="https://example.com/a?x=1&amp;copy=2&amp;b%5B%5D=3" type="via"]Tom &amp; Jerry[/credits]' );
+
+		preg_match( '/<a href="([^"]*)"[^>]*>([^<]*)<\/a>/', $html, $m );
+		$this->assertSame( 'https://example.com/a?x=1&copy=2&b%5B%5D=3', html_entity_decode( $m[1] ) );
+		$this->assertSame( 'Tom & Jerry', html_entity_decode( $m[2] ) );
+	}
+
 	public function test_shortcode_accepts_the_name_as_an_attribute(): void {
 		$html = do_shortcode( '[credits name="Attribute Name" link="https://example.com/"]' );
 
@@ -105,6 +115,47 @@ final class RenderingTest extends Credits_Integration_TestCase {
 		$this->assertSame(
 			do_shortcode( '[credits link="https://example.com/" type="via"]Same[/credits]' ),
 			$this->render_credit_block( $attrs )
+		);
+	}
+
+	/* ---------------------------------------------------------------------
+	 * Open in new tab
+	 * ------------------------------------------------------------------ */
+
+	public function test_credits_open_in_a_new_tab_unless_told_otherwise(): void {
+		// A block saved before the option existed has no newTab attribute at all.
+		foreach (
+			array(
+				do_blocks( '<!-- wp:credits/shortcode {"name":"Old","link":"https://example.com/"} /-->' ),
+				do_shortcode( '[credits link="https://example.com/"]Old[/credits]' ),
+			) as $html
+		) {
+			$this->assertStringContainsString( 'target="_blank"', $html );
+			$this->assertStringContainsString( 'rel="noopener noreferrer"', $html );
+		}
+	}
+
+	public function test_block_can_open_in_the_same_tab(): void {
+		$html = $this->render_credit_block( array( 'name' => 'Same tab', 'link' => 'https://example.com/', 'newTab' => false ) );
+
+		$this->assertStringContainsString( 'href="https://example.com/"', $html );
+		$this->assertStringNotContainsString( 'target=', $html );
+		$this->assertStringNotContainsString( 'rel=', $html );
+	}
+
+	public function test_shortcode_can_open_in_the_same_tab_with_either_spelling(): void {
+		foreach ( array( 'newtab', 'new_tab', 'newTab' ) as $attribute ) {
+			$html = do_shortcode( '[credits link="https://example.com/" ' . $attribute . '="false"]Same tab[/credits]' );
+
+			$this->assertStringContainsString( 'href="https://example.com/"', $html, $attribute );
+			$this->assertStringNotContainsString( 'target=', $html, $attribute );
+		}
+	}
+
+	public function test_shortcode_and_block_agree_on_link_opening(): void {
+		$this->assertSame(
+			do_shortcode( '[credits link="https://example.com/" newtab="false"]Same[/credits]' ),
+			$this->render_credit_block( array( 'name' => 'Same', 'link' => 'https://example.com/', 'newTab' => false ) )
 		);
 	}
 

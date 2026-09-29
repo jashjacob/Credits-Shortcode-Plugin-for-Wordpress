@@ -26,7 +26,8 @@ Supports the modern **Gutenberg Block Editor** (with live preview, customizable 
 
 ## 🚀 Features
 
-- 🧩 **Gutenberg Block Editor**: Add credits using a native WordPress block (`/credits`) featuring live in-editor previews and block sidebar controls.
+- 🧩 **Gutenberg Block Editor**: Add credits using a native WordPress block (`/credits`). Type the name and link right in the block, with a live preview and sidebar controls. Unfinished credits are flagged in the editor only.
+- 🔗 **Link Opening Control**: Credits open in a new tab by default (with `noopener noreferrer`); turn off **Open in new tab** for a same-tab link.
 - 🎨 **Custom Accent Colors**: Pick custom badge background, link background, and link text colors directly from the Block Editor sidebar or shortcode parameters.
 - ↕️ **Spacing Presets**: Keep consecutive credits compact, standard, or spacious with a site-wide default and per-credit overrides.
 - ✨ **Micro-Interaction Hover Effects**: Smooth 0.2s CSS transitions with subtle hover elevation and brightness shifts.
@@ -43,14 +44,11 @@ Supports the modern **Gutenberg Block Editor** (with live preview, customizable 
 
 1. Open any post or page in the WordPress Block Editor.
 2. Click **`+`** or type `/credits` to insert the **Credits Link** block.
-3. Use the block sidebar (Inspector Controls) to configure:
-   - **Credit Type**: Select `Source` or `Via`.
-   - **Source / Via Name**: Enter attribution name (e.g., *TechZei*).
-   - **Link URL**: Enter source URL (e.g., `https://techzei.com`).
-4. Expand **Accent Color Settings** in the block sidebar to customize:
-   - **Badge Background Color** (default: `#ef4423`)
-   - **Link Background Color** (default: `#E0D9D9`)
-   - **Link Text Color** (default: `#ef4423`)
+3. Type the credit name (e.g., *TechZei*) in the block and enter the **Link URL** (e.g., `https://techzei.com`) in the field beneath it. The block is outlined, with a note, until both are filled in (the note appears in the editor only).
+4. Use the block sidebar (Inspector Controls) for the rest:
+   - **Credit Type**: `Use site default`, `Source`, or `Via`.
+   - **Open in new tab**: on by default.
+   - **Accent Color Settings**: badge background, link background, and link text colors. Colors you leave unchanged follow **Settings → Credits**; **Reset colors to site default** clears this credit's overrides.
 5. Choose a **Spacing** preset—Use site default, Compact, Standard, or Spacious—for this credit.
 
 ---
@@ -74,6 +72,12 @@ Insert shortcodes directly in paragraph blocks, shortcode blocks, or text widget
 [credits link="https://example.com" type="source" badge_color="#0073aa" link_color="#f0f0f0" link_text_color="#0073aa"]Source Name[/credits]
 ```
 
+Credits open in a new tab. Add `newtab="false"` (or `new_tab="false"`) to open in the same tab. WordPress lowercases shortcode attribute names, so `newTab` is for the block only:
+
+```text
+[credits link="https://example.com" newtab="false"]Source Name[/credits]
+```
+
 To control the gap when several credits are stacked, add `spacing="compact"`, `spacing="standard"`, or `spacing="spacious"`. Omit it to use the site-wide default:
 
 ```text
@@ -85,8 +89,8 @@ To control the gap when several credits are stacked, add `spacing="compact"`, `s
 ### Option 3: Classic Editor (Legacy TinyMCE)
 
 If you use the Classic Editor plugin:
-1. Highlight text or click the **Credits Logo** button in the TinyMCE toolbar.
-2. Enter the attribution type (`Source` or `Via`), URL, and name when prompted.
+1. Optionally select the text you want to credit, then click the **Credits Logo** button in the TinyMCE toolbar.
+2. Fill in the form: **Credit Type**, **Name** (prefilled from your selection), and **Link URL**, then press **OK** (or **Enter**). A missing name or link, or a link that does not start with `http://`, `https://`, `mailto:` or `ftp://` (relative addresses are fine), keeps the form open with a message.
 
 ---
 
@@ -140,7 +144,7 @@ Copy or symlink the directory into your site's `/wp-content/plugins/` and activa
 
 ### Local CI (runs before every push)
 
-CI runs on your machine, not on GitHub Actions. One command runs the fast tier: PHP lint, the PHPUnit suite, a JavaScript syntax check, and the WordPress.org release zip check.
+CI runs on your machine, not on GitHub Actions. One command runs the fast tier: PHP lint, the PHPUnit suite, a JavaScript syntax check, the Node tests for the Classic Editor form (`node --test tests/js/*.test.js`, no npm packages), and the WordPress.org release zip check.
 
 ```bash
 composer install
@@ -196,6 +200,8 @@ Regenerate the POT file after changing translatable strings:
 bash scripts/generate-pot.sh
 ```
 
+Always pass the text domain as a literal (`__( 'Text', 'credits-shortcode' )`), including in the block editor script: the extractor skips strings whose domain is a variable, and a test fails if one slips in. Classic Editor form strings live in `tinymce-i18n.php` because TinyMCE cannot read the block editor's translation data.
+
 ---
 
 ## 🌍 Translations
@@ -205,6 +211,13 @@ The plugin is translation-ready via the `credits-shortcode` text domain. If you'
 ---
 
 ## 📜 Changelog
+
+### Unreleased
+- Block: edit the credit name and link inline; credits missing a name, a link, or a usable link are flagged in the editor only. Added **Reset colors to site default**.
+- Added an **Open in new tab** option to the block (`newTab`) and shortcode (`newtab` / `new_tab`); credits without it still open in a new tab.
+- Classic Editor: one form instead of browser prompts, with validation and safer shortcode insertion (a link like `?a=1&copy=2` is no longer corrupted).
+- The block's `link` attribute now defaults to an empty string instead of `#`; published output is unchanged.
+- Block editor strings are now in the translation template (they were missing), and Classic Editor strings are translated.
 
 ### Version 1.6.1
 - Fixed the Gutenberg block dropping a custom CSS class added in the editor's Advanced panel from the published output.

@@ -20,6 +20,10 @@ function fail(msg) {
   results.push({ ok: false, msg });
   console.error('FAIL:', msg);
 }
+function check(condition, okMsg, failMsg) {
+  if (condition) pass(okMsg);
+  else fail(failMsg);
+}
 
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
@@ -184,6 +188,89 @@ try {
     fail(`Published output mismatch: ${JSON.stringify({ publishedClasses, badgeText, publishedName, publishedHref, publishedTarget })}`);
   }
   await page.screenshot({ path: join(ART, 'published-credit.png'), fullPage: false });
+
+  // Inline editing, incomplete-credit feedback, color reset and link opening on a fresh credit.
+  await page.goto(`${BASE}/wp-admin/post-new.php`, { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('.edit-post-layout', { timeout: 60000 });
+  await page.waitForSelector('iframe[name="editor-canvas"]', { timeout: 60000 });
+  await page.waitForTimeout(2000);
+  await page.evaluate(() => wp.data.dispatch('core/preferences').set('core/edit-post', 'welcomeGuide', false));
+  await page.locator('.components-modal__screen-overlay').waitFor({ state: 'detached', timeout: 10000 }).catch(() => {});
+
+  const inline = page.frameLocator('iframe[name="editor-canvas"]');
+  const creditAttrs = () =>
+    page.evaluate(() => {
+      const block = wp.data.select('core/block-editor').getBlocks().find((b) => b.name === 'credits/shortcode');
+      return block ? { ...block.attributes, clientId: block.clientId } : null;
+    });
+
+  await inline.locator('h1.wp-block-post-title, [aria-label="Add title"]').first().click({ timeout: 30000 });
+  await page.keyboard.type('Credits editor e2e inline');
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(500);
+  await inline.locator('.block-editor-default-block-appender__content, p[data-empty="true"]').first().click({ timeout: 10000 });
+  await page.keyboard.type('/credits');
+  await page.waitForTimeout(800);
+  await page.keyboard.press('Enter');
+  await inline.locator('.wp-block-credits-shortcode').first().waitFor({ timeout: 30000 });
+  await page.waitForTimeout(800);
+
+  const freshNotice = await inline.locator('.credits-editor-notice').innerText();
+  check(
+    freshNotice.includes('Add a name') && freshNotice.includes('Add a link'),
+    'A new credit says what is missing',
+    `New credit notice: ${freshNotice}`
+  );
+
+  // The caret starts in the name. Enter must not split the block.
+  await page.keyboard.type('Tom & Jerry');
+  await page.keyboard.press('Enter');
+  await page.keyboard.type(' Fan');
+  await page.waitForTimeout(300);
+  const typed = await creditAttrs();
+  const blockCount = await page.evaluate(() => wp.data.select('core/block-editor').getBlocks().length);
+  check(typed.name === 'Tom & Jerry Fan' && blockCount === 1, 'Inline name editing stores plain text and Enter does not split the block', `Name/blocks: ${JSON.stringify(typed.name)} / ${blockCount}`);
+
+  const linkInput = inline.locator('.credits-editor-link-row input');
+  await linkInput.fill('javascript:alert(1)');
+  await page.waitForTimeout(300);
+  check((await inline.locator('.credits-editor-notice').innerText()).includes('cannot be used'), 'An unusable link is flagged', 'No message for an unusable link');
+
+  await linkInput.fill('');
+  await linkInput.press('Backspace');
+  await page.waitForTimeout(300);
+  check((await creditAttrs()) !== null, 'Backspace in the empty link field does not delete the block', 'The block was removed by Backspace in the link field');
+
+  await linkInput.fill('https://example.com/inline?x=1&y=2');
+  await page.waitForTimeout(300);
+  check((await inline.locator('.credits-editor-notice').count()) === 0, 'A complete credit has no notice', 'Notice still shown for a complete credit');
+
+  // Reset colors to the site default.
+  await page.evaluate((clientId) => wp.data.dispatch('core/block-editor').updateBlockAttributes(clientId, { badgeColor: '#ff0000', linkTextColor: '#00aa00' }), (await creditAttrs()).clientId);
+  await page.waitForTimeout(400);
+  await page.getByRole('button', { name: 'Reset colors to site default' }).click();
+  await page.waitForTimeout(400);
+  const reset = await creditAttrs();
+  check(reset.badgeColor === '' && reset.linkColor === '' && reset.linkTextColor === '', 'Reset colors to site default clears every override', `After reset: ${JSON.stringify(reset)}`);
+
+  // Open in new tab is on by default; turning it off reaches the published page.
+  const settings = page.locator('.components-panel__body').filter({ hasText: 'Credit Settings' });
+  check(await settings.getByLabel('Open in new tab').isChecked(), 'Open in new tab is on by default', 'Open in new tab is off for a new credit');
+  await settings.getByLabel('Open in new tab').uncheck();
+  await page.evaluate(() => wp.data.dispatch('core/editor').editPost({ status: 'publish' }));
+  await page.evaluate(() => wp.data.dispatch('core/editor').savePost());
+  await page.waitForFunction(() => {
+    const editor = wp.data.select('core/editor');
+    return !editor.isSavingPost() && editor.getCurrentPost().status === 'publish';
+  }, null, { timeout: 60000 });
+  await page.goto(await page.evaluate(() => wp.data.select('core/editor').getPermalink()), { waitUntil: 'domcontentloaded' });
+  const inlineAnchor = page.locator('ul.wp-block-credits-shortcode').first().locator('a');
+  const result = { href: await inlineAnchor.getAttribute('href'), text: (await inlineAnchor.innerText()).trim(), target: await inlineAnchor.getAttribute('target') };
+  check(
+    result.href === 'https://example.com/inline?x=1&y=2' && result.text === 'Tom & Jerry Fan' && result.target === null,
+    'The published credit uses the inline name and link and opens in the same tab',
+    `Published credit: ${JSON.stringify(result)}`
+  );
 } catch (err) {
   fail(String(err));
   await page.screenshot({ path: join(ART, 'block-editor-error.png'), fullPage: true }).catch(() => {});

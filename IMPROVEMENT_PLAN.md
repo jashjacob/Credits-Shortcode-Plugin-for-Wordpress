@@ -42,19 +42,21 @@ The initial review was completed on September 18, 2026 against version 1.5.0. Th
 
 3. **Make individual credits easier to edit.**
 
-   - [ ] Add inline name and URL editing to the block, while retaining sidebar controls for appearance.
-   - [ ] Show an instructional empty state and clear feedback for missing or invalid URLs. Avoid presenting an untouched credit as a finished link.
-   - [ ] Define and test incomplete-credit rendering before changing it. Preserve existing valid links and intentionally used fragment links; distinguish the editor placeholder from saved content.
-   - [ ] Add an "Open in new tab" control to blocks and shortcodes. Preserve the existing new-tab behavior when the new attribute is absent, and retain appropriate link security attributes.
-   - [ ] Add "Use site default" to the credit-type selector so an explicit Source/Via override can be cleared.
-   - [ ] Make inherited colors and per-credit overrides understandable, with a clear reset-to-default action.
-   - [ ] Replace the Classic Editor's sequence of browser prompts with one form containing type, name, and URL. Prefill the name from selected text and use the same validation expectations as the block.
-   - [ ] Ensure inserted shortcode values cannot break out of shortcode syntax or become unintended editor HTML.
-   - [ ] Translate all new strings and verify that they load in both editors.
+   - [x] Add inline name and URL editing to the block, while retaining sidebar controls for appearance. Inline name (`RichText`, stored as plain text) and inline link field; the sidebar keeps the same fields.
+   - [x] Show an instructional empty state and clear feedback for missing or invalid URLs. Avoid presenting an untouched credit as a finished link. Placeholder, dashed outline and a text note saying what is missing; editor-only (`css/editor.css`).
+   - [ ] Define and test incomplete-credit rendering before changing it. Preserve existing valid links and intentionally used fragment links; distinguish the editor placeholder from saved content. **Defined and pinned; front end deliberately unchanged.** `tests/integration/IncompleteCreditsTest.php` records today's output: a missing, `#` or unsafe link renders `<a href="#" target="_blank">` and a blank name renders "Credit Link". Changing what published posts show is a product decision. Proposal: a name with no usable link renders as plain text in the same chip, and a credit with neither renders nothing; valid and `#fragment` links stay as they are.
+   - [x] Add an "Open in new tab" control to blocks and shortcodes. Preserve the existing new-tab behavior when the new attribute is absent, and retain appropriate link security attributes. Block `newTab` (default `true`), shortcode `newtab` / `new_tab`. New tab keeps `target="_blank" rel="noopener noreferrer"`; same tab renders a plain link.
+   - [x] Add "Use site default" to the credit-type selector so an explicit Source/Via override can be cleared. Already in the block; the Classic Editor form has it too.
+   - [x] Make inherited colors and per-credit overrides understandable, with a clear reset-to-default action. A hint that unchanged colors follow the site defaults, plus **Reset colors to site default**.
+   - [x] Replace the Classic Editor's sequence of browser prompts with one form containing type, name, and URL. Prefill the name from selected text and use the same validation expectations as the block. One TinyMCE form. Unlike the block, it requires a name and a link.
+   - [x] Ensure inserted shortcode values cannot break out of shortcode syntax or become unintended editor HTML. Link characters are percent-encoded and `&` escaped (`?a=1&copy=2` used to be read as an entity); brackets and angle brackets are removed from names. Covered by `tests/js/`.
+   - [x] Translate all new strings and verify that they load in both editors. The translation template had no JavaScript strings (the block editor passed its text domain as a variable, which the extractor skips); it does now, and tests guard it. Classic Editor strings load through `tinymce-i18n.php`. Loading was checked once in both editors with a German test translation (the fixture was dropped as too heavy), so there is no permanent browser test for it.
 
    Acceptance: an author can create a valid credit directly in the block, identify an incomplete link before publishing, reset the type to the site default, and choose link-opening behavior. Existing saved credits keep their behavior. The Classic Editor supports keyboard entry, cancellation, and safe insertion.
 
-   Main files: `js/credits-block.js`, `credits_shortcode_plugin.js`, `credits_shortcode.php`, and `block.json`.
+   Notes: the block's `link` default changed from `"#"` to `""` so an untouched credit differs from a typed `#`; the renderer treats both as `#`, so output is unchanged. Checked in Chromium only. A name with tag-like text such as `<Jerry>` shows as typed in the editor but is published without it (`sanitize_text_field`); this was always true.
+
+   Main files: `js/credits-block.js`, `credits_shortcode_plugin.js`, `credits_shortcode.php`, `block.json`, `css/editor.css` and `tinymce-i18n.php`.
 
 4. **Improve theme compatibility and accessibility.**
 
