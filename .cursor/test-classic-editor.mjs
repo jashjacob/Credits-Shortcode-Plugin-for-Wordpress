@@ -157,6 +157,44 @@ try {
   await dialog().waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
   const sameTab = await editorContent();
   check(sameTab.includes('newtab="false"'), 'Unchecking Open in new tab adds newtab="false"', `Content: ${sameTab}`);
+
+  // --- the dialog's strings load translations (German test fixture) ---------------------------
+  if (process.env.CREDITS_E2E_TRANSLATIONS) {
+    const germanContext = await browser.newContext({ viewport: { width: 1400, height: 1000 } });
+    await germanContext.addCookies([{ name: 'credits_e2e_locale', value: 'de_DE', url: BASE }]);
+    const de = await germanContext.newPage();
+    await de.goto(`${BASE}/wp-login.php`, { waitUntil: 'domcontentloaded' });
+    await de.fill('#user_login', 'admin');
+    await de.fill('#user_pass', 'admin');
+    await de.click('#wp-submit');
+    await de.waitForURL(/wp-admin/, { timeout: 60000 });
+    await de.goto(`${BASE}/wp-admin/post-new.php`, { waitUntil: 'domcontentloaded' });
+    await de.waitForFunction(() => window.tinymce && window.tinymce.get('content') && !window.tinymce.get('content').isHidden(), null, { timeout: 30000 });
+
+    await de.locator('.mce-btn[aria-label="Quellenangabe hinzufügen"] button').click();
+    const deDialog = de.locator('.mce-window[role="dialog"]').last();
+    await deDialog.waitFor({ timeout: 10000 });
+    const deLabels = await deDialog.locator('label').allTextContents();
+    check(
+      (await deDialog.locator('.mce-title').innerText()) === 'Quellenangabe hinzufügen' &&
+        deLabels.includes('Art der Angabe') &&
+        deLabels.includes('Link-Adresse') &&
+        (await deDialog.locator('text=In neuem Tab öffnen').count()) > 0,
+      'The Classic Editor button, dialog title and labels are translated',
+      `German dialog: ${JSON.stringify(deLabels)}`
+    );
+    check((await deDialog.locator('div.mce-btn', { hasText: 'Angabe einfügen' }).count()) > 0, 'The Classic Editor dialog button is translated', 'Translated Insert button not found');
+
+    await deDialog.locator('.mce-formitem').filter({ has: de.locator('label:text-is("Name")') }).locator('input').fill('Nur ein Name');
+    await deDialog.locator('div.mce-btn', { hasText: 'Angabe einfügen' }).first().click();
+    const deAlert = de.locator('.mce-window').filter({ hasText: 'Bitte einen Link eingeben.' });
+    await deAlert.last().waitFor({ timeout: 5000 });
+    pass('The Classic Editor validation message is translated');
+    await de.screenshot({ path: join(ART, 'classic-editor-german.png') });
+    await germanContext.close();
+  } else {
+    console.log('SKIP: translation checks (CREDITS_E2E_TRANSLATIONS not set; scripts/run-editor-e2e.sh sets it)');
+  }
 } catch (err) {
   fail(String(err));
   await page.screenshot({ path: join(ART, 'classic-editor-error.png'), fullPage: true }).catch(() => {});

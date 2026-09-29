@@ -1,0 +1,64 @@
+# Test fixture only: a few German strings used by the editor e2e tests to prove that
+# translations load in the block editor (JSON) and the Classic Editor (MO).
+# It is not a shipped or reviewed translation.
+msgid ""
+msgstr ""
+"Project-Id-Version: credits-shortcode e2e fixture\n"
+"Language: de_DE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#: js/credits-block.js:1 tinymce-i18n.php:1
+msgid "Credit Type"
+msgstr "Art der Angabe"
+
+#: js/credits-block.js:1 tinymce-i18n.php:1
+msgid "Link URL"
+msgstr "Link-Adresse"
+
+#: js/credits-block.js:1 tinymce-i18n.php:1
+msgid "Open in new tab"
+msgstr "In neuem Tab öffnen"
+
+#: js/credits-block.js:1
+msgid "Credit Settings"
+msgstr "Angaben zur Quelle"
+
+#: js/credits-block.js:1
+msgid "Add credit name"
+msgstr "Name der Quelle eingeben"
+
+#: js/credits-block.js:1
+msgid "Add a link so readers can reach the source."
+msgstr "Füge einen Link hinzu, damit die Quelle erreichbar ist."
+
+#: js/credits-block.js:1
+msgid "Site default"
+msgstr "Website-Standard"
+
+#: js/credits-block.js:1
+msgid "Badge Background Color"
+msgstr "Hintergrundfarbe der Kennzeichnung"
+
+#. translators: 1: name of a color setting, for example "Badge Background Color". 2: where that color comes from, for example "Site default".
+#: js/credits-block.js:1
+msgid "%1$s: %2$s"
+msgstr "%1$s – %2$s"
+
+#: js/credits-block.js:1
+msgid "Reset colors to site default"
+msgstr "Farben auf Website-Standard zurücksetzen"
+
+#: tinymce-i18n.php:1
+msgid "Add Credits"
+msgstr "Quellenangabe hinzufügen"
+
+#: tinymce-i18n.php:1
+msgid "Insert credit"
+msgstr "Angabe einfügen"
+
+#: tinymce-i18n.php:1
+msgid "Enter a link."
+msgstr "Bitte einen Link eingeben."

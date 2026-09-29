@@ -379,6 +379,81 @@ try {
     `Published inline credit: ${JSON.stringify(inlineResult)}`
   );
   await page.screenshot({ path: join(ART, 'published-inline-credit.png') });
+
+  // ---------------------------------------------------------------------------
+  // Phase 3: the block editor's strings load translations (German test fixture).
+  // ---------------------------------------------------------------------------
+  if (process.env.CREDITS_E2E_TRANSLATIONS) {
+    const germanContext = await browser.newContext({ viewport: { width: 1400, height: 900 } });
+    await germanContext.addCookies([{ name: 'credits_e2e_locale', value: 'de_DE', url: BASE }]);
+    const de = await germanContext.newPage();
+    await de.goto(`${BASE}/wp-login.php`, { waitUntil: 'domcontentloaded' });
+    await de.fill('#user_login', 'admin');
+    await de.fill('#user_pass', 'admin');
+    await de.click('#wp-submit');
+    await de.waitForURL(/wp-admin/, { timeout: 60000 });
+    await de.goto(`${BASE}/wp-admin/post-new.php`, { waitUntil: 'domcontentloaded' });
+    await de.waitForSelector('.edit-post-layout', { timeout: 60000 });
+    await de.waitForSelector('iframe[name="editor-canvas"]', { timeout: 60000 });
+    await de.waitForTimeout(2000);
+    await de.evaluate(() => wp.data.dispatch('core/preferences').set('core/edit-post', 'welcomeGuide', false));
+    await de.locator('.components-modal__screen-overlay').waitFor({ state: 'detached', timeout: 10000 }).catch(() => {});
+
+    const deCanvas = de.frameLocator('iframe[name="editor-canvas"]');
+    await deCanvas.locator('h1.wp-block-post-title, [aria-label="Add title"]').first().click({ timeout: 30000 });
+    await de.keyboard.type('Credits editor e2e german');
+    await de.keyboard.press('Enter');
+    await de.waitForTimeout(500);
+    await deCanvas.locator('.block-editor-default-block-appender__content, p[data-empty="true"]').first().click({ timeout: 10000 });
+    await de.keyboard.type('/credits');
+    await de.waitForTimeout(800);
+    await de.keyboard.press('Enter');
+    await deCanvas.locator('.wp-block-credits-shortcode').first().waitFor({ timeout: 30000 });
+    await de.waitForTimeout(800);
+
+    check(
+      (await de.evaluate(() => document.documentElement.lang)).startsWith('de'),
+      'The German test locale is active in the editor',
+      'The editor is not running in the German test locale'
+    );
+
+    const placeholder = await deCanvas.locator('[data-rich-text-placeholder]').first().getAttribute('data-rich-text-placeholder');
+    check(placeholder === 'Name der Quelle eingeben', 'The inline name placeholder is translated', `Placeholder: ${placeholder}`);
+
+    const deNotice = await deCanvas.locator('.credits-editor-notice').innerText();
+    check(deNotice.includes('Füge einen Link hinzu'), 'The incomplete-credit notice is translated', `Notice: ${deNotice}`);
+
+    const deSettings = de.locator('.components-panel__body').filter({ hasText: 'Angaben zur Quelle' });
+    check(
+      (await deSettings.count()) === 1 &&
+        (await deSettings.getByLabel('Art der Angabe').count()) === 1 &&
+        (await deSettings.getByLabel('Link-Adresse').count()) === 1 &&
+        (await deSettings.getByLabel('In neuem Tab öffnen').count()) === 1,
+      'The sidebar panel title and control labels are translated',
+      `Sidebar text: ${await de.locator('.components-panel__body').first().innerText()}`
+    );
+
+    const deStatuses = await de.locator('.credits-color-status li').allInnerTexts();
+    check(
+      deStatuses[0] === 'Hintergrundfarbe der Kennzeichnung – Website-Standard',
+      'The color status line is translated and its placeholders are filled in the translated order',
+      `Color status: ${JSON.stringify(deStatuses)}`
+    );
+
+    await de.evaluate(
+      () => wp.data.dispatch('core/block-editor').updateBlockAttributes(wp.data.select('core/block-editor').getBlocks()[0].clientId, { badgeColor: '#ff0000' })
+    );
+    await de.waitForTimeout(400);
+    check(
+      (await de.getByRole('button', { name: 'Farben auf Website-Standard zurücksetzen' }).count()) === 1,
+      'The reset button label is translated',
+      'Translated reset button not found'
+    );
+    await de.screenshot({ path: join(ART, 'block-editor-german.png') });
+    await germanContext.close();
+  } else {
+    console.log('SKIP: translation checks (CREDITS_E2E_TRANSLATIONS not set; scripts/run-editor-e2e.sh sets it)');
+  }
 } catch (err) {
   fail(String(err));
   await page.screenshot({ path: join(ART, 'block-editor-error.png'), fullPage: true }).catch(() => {});
